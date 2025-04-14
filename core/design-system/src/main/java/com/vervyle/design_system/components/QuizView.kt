@@ -67,7 +67,6 @@ fun QuizView(
                 initialValue = currentAxialFrame,
                 onValueChange = {
                     currentAxialFrame = it
-
                 }
             )
 

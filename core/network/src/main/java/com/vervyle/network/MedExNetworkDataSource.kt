@@ -2,10 +2,10 @@ package com.vervyle.network
 
 import java.io.File
 
-// TODO: Add required functionality
+/**
+ * Внешний интерфейс, описывающий доступные функции для удаленного взаимодействия с сервером
+ */
 interface MedExNetworkDataSource {
 
-    suspend fun getMriData(id: Int? = null)
-
-    suspend fun getZipTest(id: String? = null) : List<File>
+    suspend fun getDatasetImagesById(id: String? = null) : List<File>
 }

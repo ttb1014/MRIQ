@@ -4,12 +4,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.VectorDrawable
 import android.util.Log
-import androidx.core.content.res.ResourcesCompat
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
-import com.vervyle.data.R
 import com.vervyle.data.model.FileMetadata
 import com.vervyle.model.Plane
 import com.vervyle.network.MedExNetworkDataSource
@@ -30,7 +26,7 @@ class AssetRepositoryImpl @Inject constructor(
 
     override fun getAssets(id: String): Flow<Asset> {
         return flow {
-            val files = network.getZipTest(id)
+            val files = network.getDatasetImagesById(id)
             val mappingsFile = files.find { it.name == "mappings" }
             val basesAxial = mutableMapOf<String, Bitmap>()
             val basesCoronal = mutableMapOf<String, Bitmap>()

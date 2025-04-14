@@ -12,8 +12,16 @@ import java.util.zip.ZipInputStream
 import kotlin.reflect.javaType
 import kotlin.reflect.typeOf
 
+/**
+ * Класс реализующий преобразование zip-архива в список файлов, которые в нём содержатся.
+ */
 class ZipConverter(private val outputDir: File) : Converter<ResponseBody, List<File>> {
 
+    /**
+     * @param responseBody zip-архив отправленный сервером. Если сервер возвращает не только архив, то результат не определен.
+     * Потенциально может вызвать deadlock если вызвать метод из нескольких потоков для одного responseBody.
+     * TODO проверить на возможность взаимной блокировки
+     */
     override fun convert(responseBody: ResponseBody): List<File>? {
         val zipFiles = mutableListOf<File>()
         val buffer = ByteArray(1024)
@@ -46,9 +54,14 @@ class ZipConverter(private val outputDir: File) : Converter<ResponseBody, List<F
         return zipFiles
     }
 
+
     class Factory(private val outputDir: File) : Converter.Factory() {
         @OptIn(ExperimentalStdlibApi::class)
         @Suppress("Warnings")
+        /**
+         * Используется для автоматического преобразования из responseBody в List<out File>.
+         * Предоставляет данный класс конвертера, если желаемый тип совпадает.
+         */
         override fun responseBodyConverter(
             type: Type,
             annotations: Array<Annotation>,

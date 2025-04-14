@@ -39,3 +39,7 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+*.jpg
+*.png
+*.svg

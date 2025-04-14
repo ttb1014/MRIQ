@@ -2,7 +2,7 @@ package com.vervyle.network.di
 
 import com.vervyle.network.BuildConfig
 import com.vervyle.network.MedExNetworkDataSource
-import com.vervyle.network.retrofit.RetrofitMedExNetwork
+import com.vervyle.network.retrofit.RetrofitMriqNetwork
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -39,8 +39,8 @@ internal object NetworkModule {
     @Provides
     @Singleton
     fun providesNetwork(
-        retrofitMedExNetwork: RetrofitMedExNetwork,
+        retrofitMriqNetwork: RetrofitMriqNetwork,
     ): MedExNetworkDataSource {
-        return retrofitMedExNetwork
+        return retrofitMriqNetwork
     }
 }

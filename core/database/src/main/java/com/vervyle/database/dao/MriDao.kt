@@ -6,8 +6,8 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Upsert
-import com.vervyle.database.model.MriBitmapCrossRef
-import com.vervyle.database.model.MriEntity
+import com.vervyle.database.model.old.MriBitmapCrossRef
+import com.vervyle.database.model.old.MriEntity
 
 @Dao
 interface MriDao {

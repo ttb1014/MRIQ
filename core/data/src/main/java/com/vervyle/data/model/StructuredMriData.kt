@@ -1,8 +1,5 @@
 package com.vervyle.data.model
 
-import com.vervyle.database.model.PopulatedMri
-import com.vervyle.model.Plane
-
 //data class StructuredMriData(
 //    val title: String,
 //    val axialContent: List<Pair<String, List<String>>>,
