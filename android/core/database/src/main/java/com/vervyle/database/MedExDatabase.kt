@@ -7,13 +7,13 @@ import com.vervyle.database.dao.SliceDao
 import com.vervyle.database.dao.MriDao
 import com.vervyle.database.dao.QuizDao
 import com.vervyle.database.dao.TopicDao
-import com.vervyle.database.model.SliceEntity
-import com.vervyle.database.model.BitmapsCrossRef
-import com.vervyle.database.model.MriBitmapCrossRef
-import com.vervyle.database.model.MriEntity
-import com.vervyle.database.model.QuizBitmapCrossRef
-import com.vervyle.database.model.QuizTopicCrossRef
-import com.vervyle.database.model.Topic
+import com.vervyle.database.model.old.SliceEntity
+import com.vervyle.database.model.old.BitmapsCrossRef
+import com.vervyle.database.model.old.MriBitmapCrossRef
+import com.vervyle.database.model.old.MriEntity
+import com.vervyle.database.model.old.QuizBitmapCrossRef
+import com.vervyle.database.model.old.QuizTopicCrossRef
+import com.vervyle.database.model.old.Topic
 import com.vervyle.database.util.Converters
 
 @Database(

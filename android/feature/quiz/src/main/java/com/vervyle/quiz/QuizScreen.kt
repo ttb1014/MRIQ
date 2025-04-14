@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.vervyle.design_system.components.LoadingWheel
 import com.vervyle.design_system.components.QuizView
+import com.vervyle.ui.components.ErrorView
 
 @Composable
 fun QuizScreen(
@@ -25,7 +26,7 @@ fun QuizScreen(
                 modifier = modifier.fillMaxSize()
             )
 
-        else ->
+        is QuizScreenUiState.Loading ->
             Column(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -33,6 +34,11 @@ fun QuizScreen(
             ) {
                 LoadingWheel(modifier = Modifier.size(160.dp))
             }
+
+        is QuizScreenUiState.Failed ->
+            ErrorView(
+                modifier.fillMaxSize()
+            )
     }
 }
 

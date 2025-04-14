@@ -20,7 +20,7 @@ class StructuredMriDataRepositoryImpl @Inject constructor(
 
     override fun getStructuredMriData(id: String): Flow<StructuredMriData> {
         return flow {
-            val files = network.getZipTest(id)
+            val files = network.getDatasetImagesById(id)
             val data = parseAssets(files)
             emit(data)
         }

@@ -20,7 +20,6 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "MRIQ"
-include(":app")
 include(":core:network")
 include(":core:database")
 include(":core:ui")
@@ -29,3 +28,4 @@ include(":core:model")
 include(":demo")
 include(":core:data")
 include(":feature:quiz")
+include(":mock")
