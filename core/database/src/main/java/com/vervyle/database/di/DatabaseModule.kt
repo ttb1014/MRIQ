@@ -2,7 +2,7 @@ package com.vervyle.database.di
 
 import android.content.Context
 import androidx.room.Room
-import com.vervyle.database.MedExDatabase
+import com.vervyle.database.MriqDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,11 +17,11 @@ internal object DatabaseModule {
     @Provides
     fun providesMedExDatabase(
         @ApplicationContext context: Context
-    ): MedExDatabase = Room.databaseBuilder(
+    ): MriqDatabase = Room.databaseBuilder(
         context,
-        MedExDatabase::class.java,
-        "med-ex-database"
+        MriqDatabase::class.java,
+        "mriq-database"
     )
-        .fallbackToDestructiveMigration()
+        .fallbackToDestructiveMigration(true)
         .build()
 }

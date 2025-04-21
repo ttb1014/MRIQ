@@ -10,14 +10,14 @@ plugins {
 
 android {
     namespace = "com.vervyle.network"
-    compileSdk = 34
+    compileSdk = 35
 
     buildFeatures {
         buildConfig = true
     }
 
     defaultConfig {
-        minSdk = 26
+        minSdk = 24
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -46,6 +46,8 @@ kapt {
 }
 
 dependencies {
+    implementation(project(":core:model"))
+
     implementation(libs.hilt.android)
     kapt(libs.dagger.hilt.android.compiler)
     implementation(libs.kotlinx.datetime)

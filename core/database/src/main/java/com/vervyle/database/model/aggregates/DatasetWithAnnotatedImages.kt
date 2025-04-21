@@ -4,18 +4,20 @@ import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
 import com.vervyle.database.model.DatasetEntity
-import com.vervyle.database.model.links.DatasetImageEntity
+import com.vervyle.database.model.MedicalImageEntity
+import com.vervyle.database.model.links.DatasetImageLink
 
 data class DatasetWithAnnotatedImages(
     @Embedded val dataset: DatasetEntity,
 
     @Relation(
         parentColumn = "id",
-        entityColumn = "imageId",
+        entityColumn = "id",
+        entity = MedicalImageEntity::class,
         associateBy = Junction(
-            value = DatasetImageEntity::class,
-            parentColumn = "datasetId",
-            entityColumn = "imageId"
+            value = DatasetImageLink::class,
+            parentColumn = "dataset_id",
+            entityColumn = "image_id"
         )
     )
     val annotatedImages: List<MedicalImageWithAnnotations>

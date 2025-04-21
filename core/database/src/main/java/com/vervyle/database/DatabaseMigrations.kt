@@ -1,6 +1,5 @@
 package com.vervyle.database
 
-import androidx.room.Delete
 import androidx.room.DeleteTable
 import androidx.room.migration.AutoMigrationSpec
 
