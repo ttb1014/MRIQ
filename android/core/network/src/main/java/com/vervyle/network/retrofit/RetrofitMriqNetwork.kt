@@ -2,8 +2,8 @@ package com.vervyle.network.retrofit
 
 import android.content.Context
 import com.vervyle.network.BuildConfig
-import com.vervyle.network.MedExNetworkDataSource
-import com.vervyle.network.utils.ZipConverter
+import com.vervyle.network.MriqNetworkDataSource
+import com.vervyle.network.utils.ZipToListConverter
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.serialization.json.Json
 import okhttp3.Call
@@ -35,7 +35,7 @@ internal class RetrofitMriqNetwork @Inject constructor(
     @ApplicationContext private val context: Context,
     networkJson: Json,
     okhttpCallFactory: dagger.Lazy<Call.Factory>,
-) : MedExNetworkDataSource {
+) : MriqNetworkDataSource {
 
     // Инкапсулированный объект, совершающий запросы к серверу. Конвертирует zip-архив в список файлов автоматически.
     private val networkApi = Retrofit.Builder()
@@ -43,7 +43,7 @@ internal class RetrofitMriqNetwork @Inject constructor(
         .callFactory { okhttpCallFactory.get().newCall(it) }
         .addConverterFactory(
             // Добавляем конвертер для zip-архивов
-            ZipConverter.Factory(context.externalCacheDir ?: context.cacheDir)
+            ZipToListConverter.Factory(context.externalCacheDir ?: context.cacheDir)
         )
         .build()
         .create(MriqNetworkApi::class.java)
@@ -51,7 +51,11 @@ internal class RetrofitMriqNetwork @Inject constructor(
     /**
      * Получение списка изображений для датасета по ID с сервера
      */
-    override suspend fun getDatasetImagesById(id: String?): List<File> {
-        return networkApi.getDatasetArchiveById(id)
+    override suspend fun getDatasetImagesByName(name: String?): List<File> {
+        return networkApi.getDatasetArchiveById(name)
+    }
+
+    override suspend fun getImageByName(name: String): File {
+        TODO("Not yet implemented")
     }
 }

@@ -46,6 +46,7 @@ dependencies {
     implementation(project(":core:ui"))
     implementation(project(":core:design-system"))
     implementation(project(":core:data"))
+    implementation(project(":mock"))
 
 
     implementation(libs.androidx.material3.android)

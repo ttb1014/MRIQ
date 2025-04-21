@@ -11,6 +11,8 @@ import androidx.room.PrimaryKey
     ]
 )
 data class DatasetEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+
     val name: String
 )

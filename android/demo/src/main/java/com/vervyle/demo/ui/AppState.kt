@@ -62,5 +62,9 @@ class AppState(
             else -> TODO()
         }
     }
+
+    fun navigateToQuiz(quizId: String) {
+        navHostController.navigateToQuiz(quizId)
+    }
 }
 

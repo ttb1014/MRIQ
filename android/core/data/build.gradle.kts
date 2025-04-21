@@ -41,11 +41,16 @@ dependencies {
     implementation(project(":core:database"))
     implementation(project(":core:model"))
     implementation(project(":core:network"))
+    implementation(project(":core:local"))
 
     implementation(libs.hilt.android)
     implementation(libs.gson)
 
     kapt(libs.dagger.hilt.android.compiler)
+
+    // Hilt Testing
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.48")
+    kaptAndroidTest("com.google.dagger:hilt-compiler:2.48")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -53,4 +58,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    androidTestImplementation("com.squareup.okhttp3:okhttp:4.12.0")
 }

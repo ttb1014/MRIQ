@@ -47,6 +47,7 @@ kapt {
 dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:design-system"))
+    implementation(project(":mock"))
     //implementation(libs.androidx.vectordrawable)
     implementation(libs.androidx.material3.android)
     implementation(libs.kotlinx.datetime)
@@ -58,6 +59,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.ui.tooling.preview.android)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

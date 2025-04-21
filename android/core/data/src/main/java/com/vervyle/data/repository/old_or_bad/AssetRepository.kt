@@ -1,0 +1,16 @@
+package com.vervyle.data.repository.old_or_bad
+
+import android.graphics.Bitmap
+import kotlinx.coroutines.flow.Flow
+
+
+@Deprecated("Дерьмище ебаное, скоро удалю к хуям")
+interface AssetRepository {
+    fun getAssets(id: String): Flow<Asset>
+}
+
+data class Asset(
+    val axial: List<Pair<Bitmap, List<Bitmap>>>,
+    val coronal: List<Pair<Bitmap, List<Bitmap>>>,
+    val sagittal: List<Pair<Bitmap, List<Bitmap>>>,
+)

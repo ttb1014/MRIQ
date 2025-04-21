@@ -1,11 +1,9 @@
 package com.vervyle.data.repository
 
-import com.vervyle.model.QuizResource
+import com.vervyle.model.QuizScreenResource
 import kotlinx.coroutines.flow.Flow
 
 interface QuizRepository {
 
-    fun getQuizzes(): Flow<List<QuizResource>>
-
-    fun getQuiz(id: Int): Flow<QuizResource>
+    fun getQuizByName(datasetName: String): Flow<QuizScreenResource>
 }
