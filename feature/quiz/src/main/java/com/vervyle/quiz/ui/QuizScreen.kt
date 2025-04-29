@@ -21,11 +21,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.vervyle.design_system.components.FrameSlider
 import com.vervyle.design_system.components.PlaneChip
 import com.vervyle.design_system.components.UserInput
+import com.vervyle.mock.MockAnnotatedImagesProvider
+import com.vervyle.mock.UiResourceProvider
 import com.vervyle.model.Plane
 import com.vervyle.model.QuizScreenResource
 import com.vervyle.ui.AnnotatedImagePlaneView
@@ -173,7 +176,9 @@ fun QuizScreen(
 @Preview
 @Composable
 private fun QuizScreenPreview() {
-//    QuizScreen(
-//        quizScreenResource =
-//    )
+    val uiResourceProvider = UiResourceProvider(
+        MockAnnotatedImagesProvider(LocalContext.current)
+    )
+
+    QuizScreen(uiResourceProvider.providesQuizScreenResource())
 }

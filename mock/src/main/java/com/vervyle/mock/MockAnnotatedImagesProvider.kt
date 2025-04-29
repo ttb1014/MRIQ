@@ -8,7 +8,7 @@ import com.vervyle.mock.util.toImageNameTemplate
 import com.vervyle.model.Plane
 import java.util.Locale
 
-class AnnotatedImagesProvider(
+class MockAnnotatedImagesProvider(
     private val context: Context
 ) {
 
