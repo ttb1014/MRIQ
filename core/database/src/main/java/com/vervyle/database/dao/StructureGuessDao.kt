@@ -7,7 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Upsert
 import com.vervyle.database.model.StructureGuessEntity
-import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.Instant
 
 @Dao
 interface StructureGuessDao {
@@ -21,8 +21,8 @@ interface StructureGuessDao {
     @Delete
     suspend fun deleteStructureGuess(guess: StructureGuessEntity)
 
-    @Query("DELETE FROM structure_guesses WHERE timeStamp < :timeStamp")
-    suspend fun deleteGuessesBefore(timeStamp: LocalDateTime)
+    @Query("DELETE FROM structure_guesses WHERE time_stamp < :timeStamp")
+    suspend fun deleteGuessesBefore(timeStamp: Instant)
 
     @Query("SELECT * FROM structure_guesses")
     suspend fun getAllGuesses(): List<StructureGuessEntity>
@@ -33,7 +33,7 @@ interface StructureGuessDao {
     @Query(
         """
     SELECT * FROM structure_guesses 
-    ORDER BY timeStamp DESC 
+    ORDER BY time_stamp DESC 
     LIMIT :limit
 """
     )

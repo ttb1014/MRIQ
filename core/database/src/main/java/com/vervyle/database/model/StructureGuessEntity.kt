@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.Instant
 
 @Entity(
     tableName = "structure_guesses",
@@ -23,8 +23,15 @@ import kotlinx.datetime.LocalDateTime
     ]
 )
 data class StructureGuessEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    @ColumnInfo(name = "structure_id") val structureId: Int,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+
+    @ColumnInfo(name = "structure_id")
+    val structureId: Int,
+
+    @ColumnInfo(name = "is_right")
     val isRight: Boolean,
-    val timeStamp: LocalDateTime,
+
+    @ColumnInfo(name = "time_stamp")
+    val timeStamp: Instant,
 )
