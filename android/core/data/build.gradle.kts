@@ -49,6 +49,8 @@ dependencies {
 
     kapt(libs.dagger.hilt.android.compiler)
 
+    implementation(libs.kotlinx.datetime)
+
     // Hilt Testing
     androidTestImplementation("com.google.dagger:hilt-android-testing:2.48")
     kaptAndroidTest("com.google.dagger:hilt-compiler:2.48")
