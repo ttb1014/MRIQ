@@ -1,5 +1,6 @@
 package com.vervyle.quiz
 
+import com.vervyle.model.StructureAnswerRecord
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
