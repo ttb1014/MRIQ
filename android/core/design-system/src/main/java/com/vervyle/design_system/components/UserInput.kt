@@ -30,12 +30,14 @@ fun UserInput(
         onValueChange = onTextChange,
         modifier = modifier,
         colors = TextFieldDefaults.colors(
+            unfocusedTextColor = Color.Black,
+            focusedTextColor = Color.Black,
             focusedContainerColor = Color.LightGray,
             unfocusedContainerColor = Color.LightGray,
             focusedIndicatorColor = Color.Transparent,
             errorIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent
+            unfocusedIndicatorColor = Color.Transparent,
         ),
         trailingIcon = @Composable {
             Image(painterResource(R.drawable.search), null)

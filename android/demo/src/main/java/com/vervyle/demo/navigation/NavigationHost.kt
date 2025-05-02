@@ -7,7 +7,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
 import com.vervyle.demo.ui.AppState
 import com.vervyle.quiz.QUIZ_ROUTE
+import com.vervyle.quiz.navigateToQuiz
 import com.vervyle.quiz.quizScreen
+import com.vervyle.quiz_feed.navigateToQuizFeed
+import com.vervyle.quiz_feed.quizFeedScreen
 
 @Composable
 fun NavigationHost(
@@ -22,6 +25,9 @@ fun NavigationHost(
         startDestination = startDestination,
         modifier = modifier
     ) {
+        quizFeedScreen(
+            appState::navigateToQuiz
+        )
         quizScreen()
     }
 }

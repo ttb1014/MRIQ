@@ -62,11 +62,14 @@ fun App(
                 ),
         ) {
             Column(Modifier.fillMaxSize()) {
-                TopAppBar(
-                    TopLevelDestination.CATALOG.name,
-                    { },
-                    { }
-                )
+                val destination = appState.currentTopLevelDestination
+                destination?.let {
+                    TopAppBar(
+                        destination.name,
+                        { },
+                        { }
+                    )
+                }
                 NavigationHost(
                     appState = appState,
                     navHostController = appState.navHostController,

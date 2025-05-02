@@ -1,8 +1,11 @@
 package com.vervyle.quiz
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -13,6 +16,7 @@ import androidx.navigation.NavOptions
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.vervyle.design_system.components.ErrorInfoCard
 import com.vervyle.design_system.components.LoadingWheel
 import com.vervyle.quiz.ui.QuizScreen
 import com.vervyle.quiz.ui.QuizScreenUiState
@@ -58,8 +62,24 @@ internal fun QuizRoute(
             (uiState as QuizScreenUiState.Loaded).quizScreenResource
         )
 
-        else -> {
-            LoadingWheel(Modifier.size(160.dp))
-        }
+        QuizScreenUiState.Loading ->
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                LoadingWheel(Modifier.size(160.dp))
+            }
+
+        QuizScreenUiState.Failed ->
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                ErrorInfoCard(
+                    message = "Sorry, resource can't be loaded now",
+                    onRetryClick = {},
+                    modifier = Modifier
+                )
+            }
     }
 }

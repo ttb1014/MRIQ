@@ -13,6 +13,8 @@ import androidx.navigation.navOptions
 import com.vervyle.demo.navigation.TopLevelDestination
 import com.vervyle.quiz.QUIZ_ROUTE
 import com.vervyle.quiz.navigateToQuiz
+import com.vervyle.quiz_feed.QUIZ_FEED_ROUTE
+import com.vervyle.quiz_feed.navigateToQuizFeed
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
@@ -42,8 +44,9 @@ class AppState(
         @Composable get() = navHostController
             .currentBackStackEntryAsState().value?.destination
 
-    private val currentTopLevelDestination: TopLevelDestination?
+    val currentTopLevelDestination: TopLevelDestination?
         @Composable get() = when (currentDestination?.route) {
+            QUIZ_FEED_ROUTE -> TopLevelDestination.CATALOG
             QUIZ_ROUTE -> TopLevelDestination.QUIZ
             else -> null
         }
@@ -58,6 +61,7 @@ class AppState(
         }
 
         when (topLevelDestination) {
+            TopLevelDestination.CATALOG -> navHostController.navigateToQuizFeed(topLevelNavOptions)
             TopLevelDestination.QUIZ -> navHostController.navigateToQuiz()
             else -> TODO()
         }
