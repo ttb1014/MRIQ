@@ -4,14 +4,12 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import com.vervyle.data.exceptions.BadFileNameException
-import com.vervyle.database.dao.DatasetDao
 import com.vervyle.local.LocalDataSource
 import com.vervyle.model.AnnotatedImage
 import com.vervyle.model.Plane
 import com.vervyle.model.QuizScreenResource
 import com.vervyle.model.StructureAnnotation
 import com.vervyle.network.MriqNetworkDataSource
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -26,7 +24,6 @@ private const val TAG = "TEST"
 internal class OfflineFirstQuizRepository @Inject constructor(
     private val networkDataSource: MriqNetworkDataSource,
     private val localDataSource: LocalDataSource,
-    private val datasetDao: DatasetDao,
 ) : QuizRepository {
 
     private data class FileMetadata(
@@ -76,6 +73,7 @@ internal class OfflineFirstQuizRepository @Inject constructor(
                 datasetName,
                 annotatedImages,
             )
+            localDataSource.insertQuizScreenResource(quizScreenResource)
             emit(quizScreenResource)
         }
     }

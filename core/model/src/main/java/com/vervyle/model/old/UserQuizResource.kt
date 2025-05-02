@@ -2,7 +2,7 @@ package com.vervyle.model.old
 
 import kotlinx.datetime.Instant
 
-data class UserQuizResource internal constructor(
+data class UserQuizResource constructor(
     val id: Int,
     val title: String,
     val mriData: MriData,

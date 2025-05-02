@@ -13,7 +13,7 @@ enum class TopLevelDestination(
     CATALOG(
         selectedIcon = Icons.Catalog,
         unselectedIcon = Icons.Catalog,
-        enabled = false,
+        enabled = true,
         iconTextId = R.string.catalog
     ),
     QUIZ(
