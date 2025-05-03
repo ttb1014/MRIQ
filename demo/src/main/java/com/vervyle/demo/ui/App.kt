@@ -2,10 +2,12 @@ package com.vervyle.demo.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -20,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import com.vervyle.demo.navigation.BottomBar
 import com.vervyle.demo.navigation.NavigationHost
@@ -42,12 +45,16 @@ fun App(
             SnackbarHost(snackbarHostState)
         },
         bottomBar = {
-            BottomBar(
-                destinations = TopLevelDestination.entries,
-                currentDestination = appState.currentDestination,
-                modifier = Modifier,
-                onNavigateToDestination = appState::navigateToTopLevelDestination
-            )
+            if (appState.currentTopLevelDestination != TopLevelDestination.QUIZ) {
+                BottomBar(
+                    destinations = TopLevelDestination.entries,
+                    currentDestination = appState.currentDestination,
+                    modifier = Modifier,
+                    onNavigateToDestination = appState::navigateToTopLevelDestination
+                )
+            } else {
+                Spacer(Modifier.height(32.dp))
+            }
         }
     ) { paddingValues ->
         Row(

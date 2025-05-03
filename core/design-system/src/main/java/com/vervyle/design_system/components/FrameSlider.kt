@@ -47,7 +47,7 @@ fun FrameSlider(
             modifier = Modifier
                 .size(32.dp)
                 .clickable {
-                    val newValue = (value - 1).coerceIn(0..maxValue)
+                    val newValue = (value - 1).coerceIn(0..<maxValue)
                     onValueChange(newValue)
                 },
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryContainer),
@@ -66,7 +66,7 @@ fun FrameSlider(
             Modifier
                 .size(32.dp)
                 .clickable {
-                    val newValue = (value + 1).coerceIn(0..maxValue)
+                    val newValue = (value + 1).coerceIn(0..<maxValue)
                     onValueChange(newValue)
                 },
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryContainer),
