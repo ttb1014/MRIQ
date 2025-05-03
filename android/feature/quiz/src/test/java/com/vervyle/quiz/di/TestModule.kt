@@ -12,9 +12,6 @@ object TestModule {
 
     @Provides
     fun providesQuizQuestionGenerator(): QuizQuestionGenerator {
-        return QuizQuestionGenerator(
-            emptyList(),
-            10
-        )
+        return QuizQuestionGenerator()
     }
 }

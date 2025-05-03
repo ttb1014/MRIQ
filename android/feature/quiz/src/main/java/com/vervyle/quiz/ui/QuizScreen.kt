@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -37,50 +36,55 @@ import com.vervyle.ui.AnnotatedImageView
 @Composable
 fun QuizScreen(
     quizScreenResource: QuizScreenResource,
+    shownStructures: Map<Plane, List<List<Int>>>,
+    activePlane: Plane,
+    planeToIndexMapping: Map<Plane, Int>,
+    shownAnnotationIndex: Int,
+    onUserInput: (String) -> Unit,
+    onPlaneChange: (Plane) -> Unit,
+    onPlaneIndexChange: (Plane, Int) -> Unit,
+    onAnnotationClick: (Plane, Int, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var currentAxialFrame by remember {
-        mutableIntStateOf(0)
-    }
-    var currentCoronalFrame by remember {
-        mutableIntStateOf(0)
-    }
-    var currentSagittalFrame by remember {
-        mutableIntStateOf(0)
-    }
-    var currentPlane by remember {
-        mutableStateOf(Plane.AXIAL)
-    }
-
     val axialSize = quizScreenResource.annotatedImages[Plane.AXIAL]?.size!!
     val coronalSize = quizScreenResource.annotatedImages[Plane.CORONAL]?.size!!
     val sagittalSize = quizScreenResource.annotatedImages[Plane.SAGITTAL]?.size!!
 
-    val currentAxialAnnotatedImage =
-        quizScreenResource.annotatedImages[Plane.AXIAL]?.get(currentAxialFrame)!!
-    val currentCoronalAnnotatedImage =
-        quizScreenResource.annotatedImages[Plane.CORONAL]?.get(currentCoronalFrame)!!
-    val currentSagittalAnnotatedImage =
-        quizScreenResource.annotatedImages[Plane.SAGITTAL]?.get(currentSagittalFrame)!!
-
     var userInput by remember {
         mutableStateOf("")
     }
+
+    val axialMedicalImage =
+        quizScreenResource.annotatedImages[Plane.AXIAL]!![planeToIndexMapping[Plane.AXIAL]!!]
+    val coronalMedicalImage =
+        quizScreenResource.annotatedImages[Plane.CORONAL]!![planeToIndexMapping[Plane.CORONAL]!!]
+    val sagittalMedicalImage =
+        quizScreenResource.annotatedImages[Plane.SAGITTAL]!![planeToIndexMapping[Plane.SAGITTAL]!!]
+
+    val currentAxialFrame = planeToIndexMapping[Plane.AXIAL]!!
+    val currentCoronalFrame = planeToIndexMapping[Plane.CORONAL]!!
+    val currentSagittalFrame = planeToIndexMapping[Plane.SAGITTAL]!!
+
     Column(
         modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
         AnnotatedImageView(
-            image = when (currentPlane) {
-                Plane.AXIAL -> currentAxialAnnotatedImage.image
-                Plane.CORONAL -> currentCoronalAnnotatedImage.image
-                Plane.SAGITTAL -> currentSagittalAnnotatedImage.image
+            image = when (activePlane) {
+                Plane.AXIAL -> axialMedicalImage.image
+                Plane.CORONAL -> coronalMedicalImage.image
+                Plane.SAGITTAL -> sagittalMedicalImage.image
             },
-            annotations = when (currentPlane) {
-                Plane.AXIAL -> currentAxialAnnotatedImage.annotations.map { it.mask }
-                Plane.CORONAL -> currentCoronalAnnotatedImage.annotations.map { it.mask }
-                Plane.SAGITTAL -> currentSagittalAnnotatedImage.annotations.map { it.mask }
+            annotations = when (activePlane) {
+                Plane.AXIAL -> axialMedicalImage.annotations.map { it.mask }
+                Plane.CORONAL -> coronalMedicalImage.annotations.map { it.mask }
+                Plane.SAGITTAL -> sagittalMedicalImage.annotations.map { it.mask }
+            },
+            shownAnnotations = shownStructures[activePlane]!![planeToIndexMapping[activePlane]!!],
+            shownAnnotationIndex = shownAnnotationIndex,
+            onAnnotationClick = { annotationIndex ->
+                onAnnotationClick(activePlane, planeToIndexMapping[activePlane]!!, annotationIndex)
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -88,8 +92,12 @@ fun QuizScreen(
         )
         Spacer(Modifier.height(16.dp))
         UserInput(
-            userInput, { userInput = it },
-            Modifier.fillMaxWidth()
+            text = userInput,
+            onTextChange = { userInput = it },
+            onIconPressed = {
+                onUserInput(userInput)
+            },
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(16.dp))
         Column(
@@ -107,17 +115,11 @@ fun QuizScreen(
                         AnnotatedImagePlaneView(
                             plane = plane,
                             bitmap = when (plane) {
-                                Plane.AXIAL -> quizScreenResource.annotatedImages[plane]?.get(
-                                    currentAxialFrame
-                                )!!.image
+                                Plane.AXIAL -> quizScreenResource.annotatedImages[plane]!![currentAxialFrame].image
 
-                                Plane.CORONAL -> quizScreenResource.annotatedImages[plane]?.get(
-                                    currentCoronalFrame
-                                )!!.image
+                                Plane.CORONAL -> quizScreenResource.annotatedImages[plane]!![currentCoronalFrame].image
 
-                                Plane.SAGITTAL -> quizScreenResource.annotatedImages[plane]?.get(
-                                    currentSagittalFrame
-                                )!!.image
+                                Plane.SAGITTAL -> quizScreenResource.annotatedImages[plane]!![currentSagittalFrame].image
                             },
                             currentAxialIndex = currentAxialFrame,
                             currentCoronalIndex = currentCoronalFrame,
@@ -139,32 +141,25 @@ fun QuizScreen(
                 modifier = Modifier
             ) {
                 Plane.entries.forEach { plane ->
-                    PlaneChip(plane, { currentPlane = plane })
+                    PlaneChip(
+                        plane,
+                        onPlaneChange
+                    )
                     Spacer(Modifier.width(8.dp))
                 }
                 FrameSlider(
-                    value = when (currentPlane) {
+                    value = when (activePlane) {
                         Plane.AXIAL -> currentAxialFrame
                         Plane.CORONAL -> currentCoronalFrame
                         Plane.SAGITTAL -> currentSagittalFrame
                     },
-                    maxValue = when (currentPlane) {
+                    maxValue = when (activePlane) {
                         Plane.AXIAL -> axialSize
                         Plane.CORONAL -> coronalSize
                         Plane.SAGITTAL -> sagittalSize
                     },
-                    onValueChange = when (currentPlane) {
-                        Plane.AXIAL -> { it ->
-                            currentAxialFrame = it
-                        }
-
-                        Plane.CORONAL -> { it ->
-                            currentCoronalFrame = it
-                        }
-
-                        Plane.SAGITTAL -> { it ->
-                            currentSagittalFrame = it
-                        }
+                    onValueChange = {
+                        onPlaneIndexChange(activePlane, it)
                     },
                     modifier = Modifier,
                 )
@@ -180,5 +175,9 @@ private fun QuizScreenPreview() {
         MockAnnotatedImagesProvider(LocalContext.current)
     )
 
-    QuizScreen(uiResourceProvider.providesQuizScreenResource())
+//    QuizScreen(
+//        uiResourceProvider.providesQuizScreenResource(),
+//        0,
+//        {}
+//    )
 }

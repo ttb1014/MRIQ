@@ -7,15 +7,19 @@ import kotlin.math.pow
 import kotlin.random.Random
 import kotlin.time.DurationUnit
 
-class QuizQuestionGenerator(
-    private val structureAnswerHistory: List<StructureAnswerRecord>,
-    private val availableStructureNumber: Int,
-) {
+class QuizQuestionGenerator {
     private val current = Clock.System.now()
     private val random = Random(RANDOM_SEED)
 
-    fun generateQuestions(z: Int): IntArray {
-        val stat = generateStructureStatistics()
+    fun generateQuestions(
+        structureAnswerHistory: List<StructureAnswerRecord>,
+        availableStructureNumber: Int,
+        z: Int,
+    ): IntArray {
+        val stat = generateStructureStatistics(
+            structureAnswerHistory,
+            availableStructureNumber
+        )
         val score = stat
             .map { value ->
                 1.0 - value
@@ -60,7 +64,10 @@ class QuizQuestionGenerator(
         return this.map { it / sum }
     }
 
-    private fun generateStructureStatistics(): List<Double> {
+    private fun generateStructureStatistics(
+        structureAnswerHistory: List<StructureAnswerRecord>,
+        availableStructureNumber: Int
+    ): List<Double> {
         val correctStatistics = Array(availableStructureNumber) { 0.0 }
         val allStatistics = Array(availableStructureNumber) { 0.0 }
 
@@ -75,6 +82,9 @@ class QuizQuestionGenerator(
 
         return correctStatistics.zip(allStatistics)
             .map { (correct, all) ->
+                if (all == 0.0) {
+                    return@map 0.0
+                }
                 correct / all
             }
     }

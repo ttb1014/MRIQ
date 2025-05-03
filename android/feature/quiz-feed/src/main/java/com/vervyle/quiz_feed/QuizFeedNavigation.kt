@@ -10,7 +10,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 
-const val QUIZ_FEED_ROUTE = "quiz_feed_route"
+const val QUIZ_FEED_ROUTE = "catalog_route"
 
 fun NavController.navigateToQuizFeed(navOptions: NavOptions?) =
     navigate(QUIZ_FEED_ROUTE, navOptions)
