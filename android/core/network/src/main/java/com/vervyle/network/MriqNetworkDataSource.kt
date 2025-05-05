@@ -10,5 +10,5 @@ interface MriqNetworkDataSource {
     /**
      * Получение викторины по ID с сервера
      */
-    suspend fun getQuizByName(id: String): QuizDto
+    suspend fun getQuizById(id: String): QuizDto
 }
