@@ -1,22 +1,5 @@
 package com.vervyle.data.repository.old_or_bad
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.util.Log
-import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
-import com.vervyle.model.Plane
-import com.vervyle.network.MriqNetworkDataSource
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileNotFoundException
-import java.util.Locale
-import javax.inject.Inject
-
 //const val TAG = "AssetRepository"
 //
 //class AssetRepositoryImpl @Inject constructor(

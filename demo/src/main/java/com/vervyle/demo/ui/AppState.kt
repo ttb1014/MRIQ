@@ -13,7 +13,7 @@ import androidx.navigation.navOptions
 import com.vervyle.demo.navigation.TopLevelDestination
 import com.vervyle.quiz.QUIZ_ROUTE
 import com.vervyle.quiz.navigateToQuiz
-import com.vervyle.quiz_feed.QUIZ_FEED_ROUTE
+import com.vervyle.quiz_feed.CATALOG_ROUTE
 import com.vervyle.quiz_feed.navigateToQuizFeed
 import kotlinx.coroutines.CoroutineScope
 
@@ -46,7 +46,7 @@ class AppState(
 
     val currentTopLevelDestination: TopLevelDestination?
         @Composable get() = when (currentDestination?.route) {
-            QUIZ_FEED_ROUTE -> TopLevelDestination.CATALOG
+            CATALOG_ROUTE -> TopLevelDestination.CATALOG
             QUIZ_ROUTE -> TopLevelDestination.QUIZ
             else -> null
         }
@@ -69,6 +69,10 @@ class AppState(
 
     fun navigateToQuiz(quizId: String) {
         navHostController.navigateToQuiz(quizId)
+    }
+
+    fun popBackStack() {
+        navHostController.popBackStack()
     }
 }
 

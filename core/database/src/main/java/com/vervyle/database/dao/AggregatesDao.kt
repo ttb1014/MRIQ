@@ -3,6 +3,7 @@ package com.vervyle.database.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import androidx.room.Transaction
 import com.vervyle.database.model.AnnotationImageEntity
 import com.vervyle.database.model.DatasetEntity
@@ -33,17 +34,29 @@ interface AggregatesDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertAnnotationStructureLink(link: AnnotationStructureLink): Long
 
-    @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun insertStructure(structure: StructureEntity): Long
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertIgnoreStructure(structure: StructureEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertAnnotationImage(image: AnnotationImageEntity): Long
+
+    @Query("SELECT id FROM structures WHERE name = :name LIMIT 1")
+    suspend fun getStructureIdByStructureName(name: String): Long?
+
+    suspend fun insertOrGetId(entity: StructureEntity): Long {
+        val insertedId = insertIgnoreStructure(entity)
+        return if (insertedId == -1L) {
+            getStructureIdByStructureName(entity.name) ?: error("Entity not found after conflict")
+        } else {
+            insertedId
+        }
+    }
 
     @Transaction
     suspend fun insertAnnotationWithStructure(annotationWithStructure: AnnotationWithStructure): Long {
         val annotationId = insertAnnotationImage(annotationWithStructure.annotation)
 
-        val structureId = insertStructure(annotationWithStructure.structure)
+        val structureId = insertOrGetId(annotationWithStructure.structure)
 
         insertAnnotationStructureLink(
             AnnotationStructureLink(

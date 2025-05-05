@@ -45,5 +45,5 @@ fun PlaneChip(
 @Preview
 @Composable
 private fun PlaneChipPreview() {
-    PlaneChip(Plane.AXIAL,{})
+    PlaneChip(Plane.AXIAL, {})
 }

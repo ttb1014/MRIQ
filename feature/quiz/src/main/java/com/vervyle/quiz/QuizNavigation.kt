@@ -42,8 +42,7 @@ fun NavGraphBuilder.quizScreen() {
         route = QUIZ_ROUTE,
         arguments = listOf(
             navArgument(QUIZ_ID_ARG) {
-                defaultValue = "dataset_brain_new"
-                nullable = false
+                nullable = true
                 type = NavType.StringType
             }
         )
@@ -57,7 +56,7 @@ internal fun QuizRoute(
     viewModel: QuizViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val shownStructures by viewModel.indexToActiveStructuresMapping.collectAsStateWithLifecycle()
+    val shownStructures by viewModel.shownAnnotations.collectAsStateWithLifecycle()
     val shownAnnotationIndex by viewModel.currentAnnotation.collectAsStateWithLifecycle(0)
     val activePlane by viewModel.activePlane.collectAsStateWithLifecycle()
     val planeToIndexMapping by viewModel.planeToIndexMapping.collectAsStateWithLifecycle()
@@ -68,7 +67,7 @@ internal fun QuizRoute(
             shownStructures = shownStructures,
             activePlane = activePlane,
             planeToIndexMapping = planeToIndexMapping,
-            shownAnnotationIndex = shownAnnotationIndex,
+            quizzedStructure = shownAnnotationIndex,
             onUserInput = viewModel::onUserInput,
             onPlaneChange = viewModel::onActivePlaneChange,
             onPlaneIndexChange = viewModel::onPlaneIndexChange,

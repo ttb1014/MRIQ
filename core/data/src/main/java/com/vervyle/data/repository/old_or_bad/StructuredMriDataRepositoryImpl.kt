@@ -1,19 +1,5 @@
 package com.vervyle.data.repository.old_or_bad
 
-import com.vervyle.data.exceptions.FileNotParsedException
-import com.vervyle.model.Plane
-import com.vervyle.model.old.Structure
-import com.vervyle.model.old.StructuredImage
-import com.vervyle.model.old.StructuredMriData
-import com.vervyle.network.MriqNetworkDataSource
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.withContext
-import java.io.File
-import java.util.Locale
-import javax.inject.Inject
-
 //@Deprecated("выбросить в помойку!!!")
 //class StructuredMriDataRepositoryImpl @Inject constructor(
 //    private val network: MriqNetworkDataSource

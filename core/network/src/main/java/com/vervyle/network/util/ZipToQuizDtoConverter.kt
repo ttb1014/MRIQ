@@ -6,7 +6,6 @@ import com.vervyle.network.model.AnnotationDto
 import com.vervyle.network.model.QuizDto
 import com.vervyle.network.model.StructureDto
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -37,7 +36,8 @@ class ZipToQuizDtoConverter(
 
         val zipFiles = responseBody.getFiles()
 
-        return zipFiles.toQuizDto()
+        val quizDto = zipFiles.toQuizDto()
+        return quizDto
     }
 
     private fun ResponseBody.getFiles(): List<File> {
@@ -82,7 +82,7 @@ class ZipToQuizDtoConverter(
         val quiz = Json.parseToJsonElement(text).jsonObject
         return QuizDto(
             id = quiz["id"]!!.jsonPrimitive.content,
-            structures = quiz["structures"]!!.jsonArray.map { jsonElement->
+            structures = quiz["structures"]!!.jsonArray.map { jsonElement ->
                 val structureObject = jsonElement.jsonObject
                 StructureDto(
                     id = structureObject["id"]!!.jsonPrimitive.content.toInt(),
@@ -99,7 +99,7 @@ class ZipToQuizDtoConverter(
                         val annotationObject = it.jsonObject
                         AnnotationDto(
                             structureId = annotationObject["structure_id"]!!.jsonPrimitive.content.toInt(),
-                            pathToImageFile =annotationObject["path_to_image_file"]!!.jsonPrimitive.content
+                            pathToImageFile = annotationObject["path_to_image_file"]!!.jsonPrimitive.content
                         )
                     }
                 )
@@ -113,7 +113,7 @@ class ZipToQuizDtoConverter(
                         val annotationObject = it.jsonObject
                         AnnotationDto(
                             structureId = annotationObject["structure_id"]!!.jsonPrimitive.content.toInt(),
-                            pathToImageFile =annotationObject["path_to_image_file"]!!.jsonPrimitive.content
+                            pathToImageFile = annotationObject["path_to_image_file"]!!.jsonPrimitive.content
                         )
                     }
                 )
@@ -127,7 +127,7 @@ class ZipToQuizDtoConverter(
                         val annotationObject = it.jsonObject
                         AnnotationDto(
                             structureId = annotationObject["structure_id"]!!.jsonPrimitive.content.toInt(),
-                            pathToImageFile =annotationObject["path_to_image_file"]!!.jsonPrimitive.content
+                            pathToImageFile = annotationObject["path_to_image_file"]!!.jsonPrimitive.content
                         )
                     }
                 )
