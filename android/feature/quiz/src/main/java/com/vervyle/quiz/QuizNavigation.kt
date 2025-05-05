@@ -57,9 +57,22 @@ internal fun QuizRoute(
     viewModel: QuizViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val shownStructures by viewModel.indexToActiveStructuresMapping.collectAsStateWithLifecycle()
+    val shownAnnotationIndex by viewModel.currentAnnotation.collectAsStateWithLifecycle(0)
+    val activePlane by viewModel.activePlane.collectAsStateWithLifecycle()
+    val planeToIndexMapping by viewModel.planeToIndexMapping.collectAsStateWithLifecycle()
+
     when (uiState) {
         is QuizScreenUiState.Loaded -> QuizScreen(
-            (uiState as QuizScreenUiState.Loaded).quizScreenResource
+            quizScreenResource = (uiState as QuizScreenUiState.Loaded).quizScreenResource,
+            shownStructures = shownStructures,
+            activePlane = activePlane,
+            planeToIndexMapping = planeToIndexMapping,
+            shownAnnotationIndex = shownAnnotationIndex,
+            onUserInput = viewModel::onUserInput,
+            onPlaneChange = viewModel::onActivePlaneChange,
+            onPlaneIndexChange = viewModel::onPlaneIndexChange,
+            onAnnotationClick = viewModel::onAnnotationClick
         )
 
         QuizScreenUiState.Loading ->
