@@ -45,16 +45,16 @@ fun App(
             SnackbarHost(snackbarHostState)
         },
         bottomBar = {
-            if (appState.currentTopLevelDestination != TopLevelDestination.QUIZ) {
+//            if (appState.currentTopLevelDestination != TopLevelDestination.QUIZ) {
                 BottomBar(
                     destinations = TopLevelDestination.entries,
                     currentDestination = appState.currentDestination,
                     modifier = Modifier,
                     onNavigateToDestination = appState::navigateToTopLevelDestination
                 )
-            } else {
-                Spacer(Modifier.height(32.dp))
-            }
+//            } else {
+//                Spacer(Modifier.height(32.dp))
+//            }
         }
     ) { paddingValues ->
         Row(
