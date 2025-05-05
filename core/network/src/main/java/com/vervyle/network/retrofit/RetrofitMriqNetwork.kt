@@ -51,7 +51,7 @@ internal class RetrofitMriqNetwork @Inject constructor(
     /**
      * Получение викторины по ID с сервера
      */
-    override suspend fun getQuizByName(id: String): QuizDto {
+    override suspend fun getQuizById(id: String): QuizDto {
         return networkApi.getQuizArchiveById(id)
     }
 }
