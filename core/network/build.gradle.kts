@@ -49,10 +49,18 @@ dependencies {
     implementation(project(":core:model"))
 
     implementation(libs.hilt.android)
-    kapt(libs.dagger.hilt.android.compiler)
+    kapt(libs.hilt.android.compiler)
     implementation(libs.kotlinx.datetime)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.converter.kotlinx.serialization)
     implementation(libs.okhttp.logging)
     implementation(libs.retrofit.core)
+
+    androidTestImplementation(libs.hilt.android.testing)
+    kaptAndroidTest(libs.hilt.android.compiler)
+
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.runner)
 }

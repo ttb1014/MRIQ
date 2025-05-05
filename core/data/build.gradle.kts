@@ -47,7 +47,7 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.gson)
 
-    kapt(libs.dagger.hilt.android.compiler)
+    kapt(libs.hilt.android.compiler)
 
     implementation(libs.kotlinx.datetime)
 
