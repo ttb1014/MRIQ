@@ -20,14 +20,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.vervyle.design_system.components.FrameSlider
 import com.vervyle.design_system.components.PlaneChip
 import com.vervyle.design_system.components.UserInput
-import com.vervyle.mock.MockAnnotatedImagesProvider
-import com.vervyle.mock.UiResourceProvider
 import com.vervyle.model.Plane
 import com.vervyle.model.QuizScreenResource
 import com.vervyle.ui.AnnotatedImagePlaneView
@@ -36,10 +32,10 @@ import com.vervyle.ui.AnnotatedImageView
 @Composable
 fun QuizScreen(
     quizScreenResource: QuizScreenResource,
-    shownStructures: Map<Plane, List<List<Int>>>,
+    shownStructures: List<Int>,
+    quizzedStructure: Int,
     activePlane: Plane,
     planeToIndexMapping: Map<Plane, Int>,
-    shownAnnotationIndex: Int,
     onUserInput: (String) -> Unit,
     onPlaneChange: (Plane) -> Unit,
     onPlaneIndexChange: (Plane, Int) -> Unit,
@@ -77,12 +73,20 @@ fun QuizScreen(
                 Plane.SAGITTAL -> sagittalMedicalImage.image
             },
             annotations = when (activePlane) {
-                Plane.AXIAL -> axialMedicalImage.annotations.map { it.mask }
-                Plane.CORONAL -> coronalMedicalImage.annotations.map { it.mask }
-                Plane.SAGITTAL -> sagittalMedicalImage.annotations.map { it.mask }
+                Plane.AXIAL -> axialMedicalImage.annotations.map { structureAnnotation ->
+                    Pair(structureAnnotation.structureId, structureAnnotation.mask)
+                }
+
+                Plane.CORONAL -> coronalMedicalImage.annotations.map { structureAnnotation ->
+                    Pair(structureAnnotation.structureId, structureAnnotation.mask)
+                }
+
+                Plane.SAGITTAL -> sagittalMedicalImage.annotations.map { structureAnnotation ->
+                    Pair(structureAnnotation.structureId, structureAnnotation.mask)
+                }
             },
-            shownAnnotations = shownStructures[activePlane]!![planeToIndexMapping[activePlane]!!],
-            shownAnnotationIndex = shownAnnotationIndex,
+            shownAnnotationsIndices = shownStructures,
+            quizzedAnnotation = quizzedStructure,
             onAnnotationClick = { annotationIndex ->
                 onAnnotationClick(activePlane, planeToIndexMapping[activePlane]!!, annotationIndex)
             },
@@ -166,18 +170,4 @@ fun QuizScreen(
             }
         }
     }
-}
-
-@Preview
-@Composable
-private fun QuizScreenPreview() {
-    val uiResourceProvider = UiResourceProvider(
-        MockAnnotatedImagesProvider(LocalContext.current)
-    )
-
-//    QuizScreen(
-//        uiResourceProvider.providesQuizScreenResource(),
-//        0,
-//        {}
-//    )
 }

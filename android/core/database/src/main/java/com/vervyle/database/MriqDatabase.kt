@@ -31,7 +31,7 @@ import com.vervyle.database.util.Converters
         DatasetImageLink::class,
         ImageAnnotationLink::class,
     ],
-    version = 1,
+    version = 2,
 )
 @TypeConverters(Converters::class)
 internal abstract class MriqDatabase : RoomDatabase() {

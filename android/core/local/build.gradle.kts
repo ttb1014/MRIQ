@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.sample.local"
+    namespace = "com.vervyle.local"
     compileSdk = 35
 
     defaultConfig {
@@ -41,11 +41,14 @@ kapt {
 dependencies {
     implementation(project(":core:database"))
     implementation(project(":core:model"))
+    implementation(project(":core:disk"))
 
     implementation(libs.hilt.android)
     kapt("com.google.dagger:hilt-compiler:2.51.1")
+
     androidTestImplementation("com.google.dagger:hilt-android-testing:2.51.1")
     kaptAndroidTest("com.google.dagger:hilt-android-compiler:2.51.1")
+    androidTestImplementation(project(":core:network"))
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     implementation(libs.androidx.core.ktx)

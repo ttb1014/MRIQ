@@ -10,15 +10,15 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 
-const val QUIZ_FEED_ROUTE = "catalog_route"
+const val CATALOG_ROUTE = "catalog_route"
 
 fun NavController.navigateToQuizFeed(navOptions: NavOptions?) =
-    navigate(QUIZ_FEED_ROUTE, navOptions)
+    navigate(CATALOG_ROUTE, navOptions)
 
 fun NavGraphBuilder.quizFeedScreen(
     onQuizClicked: (String) -> Unit,
 ) {
-    composable(route = QUIZ_FEED_ROUTE) {
+    composable(route = CATALOG_ROUTE) {
         QuizFeedRoute(onQuizClicked)
     }
 }

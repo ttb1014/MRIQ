@@ -6,5 +6,5 @@ data class QuizDto(
     val axialAnnotatedImages: List<AnnotatedImageDto>,
     val coronalAnnotatedImages: List<AnnotatedImageDto>,
     val sagittalAnnotatedImages: List<AnnotatedImageDto>,
-    val name: String? = id,
+    val name: String = id,
 )

@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -47,7 +46,7 @@ class QuizViewModel @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<QuizScreenUiState> = savedStateHandle
-        .getStateFlow<String?>(QUIZ_ID_ARG, "")
+        .getStateFlow<String?>(QUIZ_ID_ARG, null)
         .flatMapLatest { it ->
             if (it.isNullOrBlank()) {
                 flowOf(QuizScreenUiState.Failed)
@@ -81,8 +80,8 @@ class QuizViewModel @Inject constructor(
         MutableStateFlow<Map<Plane, Int>>(Plane.entries.associateWith { 0 })
     val planeToIndexMapping = _planeToIndexMapping.asStateFlow()
 
-    val indexToActiveStructuresMapping: MutableStateFlow<Map<Plane, List<List<Int>>>> =
-        MutableStateFlow(emptyMap())
+    val shownAnnotations: MutableStateFlow<List<Int>> =
+        MutableStateFlow(emptyList<Int>())
 
     init {
         viewModelScope.launch {
@@ -92,15 +91,6 @@ class QuizViewModel @Inject constructor(
                     generatedQuestionsChannel.send(it)
                 }
             }
-        }
-        viewModelScope.launch {
-            uiState
-                .filterIsInstance<QuizScreenUiState.Loaded>()
-                .collect { loaded ->
-                    indexToActiveStructuresMapping.value = Plane.entries.associateWith { plane ->
-                        List(loaded.quizScreenResource.annotatedImages[plane]!!.size) { emptyList() }
-                    }
-                }
         }
     }
 
@@ -125,21 +115,14 @@ class QuizViewModel @Inject constructor(
     }
 
     fun onAnnotationClick(plane: Plane, imageIndex: Int, annotationIndex: Int) {
-        val map = indexToActiveStructuresMapping.value.toMutableMap()
-        val imageList = indexToActiveStructuresMapping.value[plane]!!.toMutableList()
-        val annotationIndices =
-            indexToActiveStructuresMapping.value[plane]!![imageIndex].toMutableList()
-        if (annotationIndices.contains(annotationIndex)) {
-            annotationIndices.remove(annotationIndex)
-            imageList[imageIndex] = annotationIndices
-            map[plane] = imageList
-            indexToActiveStructuresMapping.value = map
+        val newShownAnnotations = shownAnnotations.value.toMutableList()
+        if (shownAnnotations.value.contains(annotationIndex)) {
+            newShownAnnotations.remove(annotationIndex)
+            shownAnnotations.value = newShownAnnotations
             return
         }
-        annotationIndices.add(annotationIndex)
-        imageList[imageIndex] = annotationIndices
-        map[plane] = imageList
-        indexToActiveStructuresMapping.value = map
+        newShownAnnotations.add(annotationIndex)
+        shownAnnotations.value = newShownAnnotations
         return
     }
 

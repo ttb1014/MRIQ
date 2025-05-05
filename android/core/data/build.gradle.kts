@@ -41,7 +41,7 @@ dependencies {
     implementation(project(":core:database"))
     implementation(project(":core:model"))
     implementation(project(":core:network"))
-    implementation(project(":core:local"))
+    implementation(project(":core:disk"))
     implementation(project(":mock"))
 
     implementation(libs.hilt.android)

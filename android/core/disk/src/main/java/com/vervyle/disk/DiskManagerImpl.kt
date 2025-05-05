@@ -1,4 +1,4 @@
-package com.vervyle.local.disk
+package com.vervyle.disk
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -10,16 +10,16 @@ import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
 
-internal class DiskFileManager @Inject constructor(
+internal class DiskFileManagerImpl @Inject constructor(
     @ApplicationContext private val context: Context,
-) {
+) : DiskManager {
     private val cacheDir = context.externalCacheDir ?: context.cacheDir
     var compressFormat = DEFAULT_COMPRESS_FORMAT
     var compressQuality = DEFAULT_COMPRESS_QUALITY
 
-    suspend fun saveImage(name: String, bitmap: Bitmap): File {
+    override suspend fun saveImage(name: String, bitmap: Bitmap): File {
         val file = File(
-            cacheDir, "$name.${compressFormat.name.lowercase()}"
+            cacheDir, name
         )
         withContext(Dispatchers.IO) {
             FileOutputStream(file).use {
@@ -29,8 +29,11 @@ internal class DiskFileManager @Inject constructor(
         return file
     }
 
-    suspend fun loadImage(name: String): Bitmap? {
-        val file = File(cacheDir, "$name.${compressFormat.name.lowercase()}")
+    override suspend fun loadImage(name: String): Bitmap? {
+        var filename = name
+        if (!name.contains('.'))
+            filename = name + '.' + compressFormat.name.lowercase()
+        val file = File(cacheDir, filename)
         return if (file.exists()) {
             withContext(Dispatchers.IO) {
                 BitmapFactory.decodeFile(file.absolutePath)
@@ -38,11 +41,11 @@ internal class DiskFileManager @Inject constructor(
         } else null
     }
 
-    fun hasImage(name: String): Boolean {
+    override fun hasImage(name: String): Boolean {
         return File(cacheDir, "$name.${compressFormat.name.lowercase()}").exists()
     }
 
-    fun clearCache() {
+    override fun clearCache() {
         cacheDir.listFiles()?.forEach { it.delete() }
     }
 
@@ -51,3 +54,4 @@ internal class DiskFileManager @Inject constructor(
         private const val DEFAULT_COMPRESS_QUALITY = 100
     }
 }
+

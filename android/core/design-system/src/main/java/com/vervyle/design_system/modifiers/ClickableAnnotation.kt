@@ -35,13 +35,31 @@ fun Modifier.clickableAnnotation(
     )
 }
 
+//fun Modifier.clickableAnnotations(
+//    annotations: List<Bitmap>,
+//    onClick: (Int) -> Unit
+//) = this.pointerInput(annotations) {
+//    detectTapGestures(
+//        onTap = { offset ->
+//            annotations.forEachIndexed { index, annotation ->
+//                val x = (offset.x / size.width * annotation.width).toInt()
+//                val y = (offset.y / size.height * annotation.height).toInt()
+//                val pixelArgb = annotation.getPixel(x, y).toColor().toArgb()
+//                if (pixelArgb != Color.Transparent.toArgb()) {
+//                    onClick(index)
+//                }
+//            }
+//        }
+//    )
+//}
+
 fun Modifier.clickableAnnotations(
-    annotations: List<Bitmap>,
+    annotations: List<Pair<Int, Bitmap>>,
     onClick: (Int) -> Unit
 ) = this.pointerInput(annotations) {
     detectTapGestures(
         onTap = { offset ->
-            annotations.forEachIndexed { index, annotation ->
+            annotations.forEach { (index, annotation) ->
                 val x = (offset.x / size.width * annotation.width).toInt()
                 val y = (offset.y / size.height * annotation.height).toInt()
                 val pixelArgb = annotation.getPixel(x, y).toColor().toArgb()
