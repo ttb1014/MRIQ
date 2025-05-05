@@ -37,4 +37,14 @@ val userQuizResources = listOf(
         isBookmarked = false,
         isViewed = false,
     ),
+    UserQuizResource(
+        id = 0,
+        title = "brain_decompiled_flat",
+        mriData = MriData(emptyList(), emptyList(), emptyList()),
+        pathToHeaderImage = "",
+        date = Instant.DISTANT_FUTURE,
+        topics = emptyList<Topic>(),
+        isBookmarked = false,
+        isViewed = false,
+    ),
 )

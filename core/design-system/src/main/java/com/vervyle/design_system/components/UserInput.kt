@@ -1,6 +1,7 @@
 package com.vervyle.design_system.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.TextField
@@ -22,6 +23,7 @@ import com.vervyle.design_system.theme.Theme
 fun UserInput(
     text: String,
     onTextChange: (String) -> Unit,
+    onIconPressed: () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -40,7 +42,13 @@ fun UserInput(
             unfocusedIndicatorColor = Color.Transparent,
         ),
         trailingIcon = @Composable {
-            Image(painterResource(R.drawable.search), null)
+            Image(
+                painter = painterResource(R.drawable.search),
+                contentDescription = null,
+                modifier = Modifier.clickable {
+                    onIconPressed()
+                }
+            )
         },
         shape = RoundedCornerShape(12.dp),
     )
@@ -54,6 +62,7 @@ private fun UserInputPreview() {
         UserInput(
             text,
             { text = it },
+            {},
             Modifier.fillMaxWidth()
         )
     }
