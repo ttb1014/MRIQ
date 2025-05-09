@@ -1,8 +1,11 @@
 package com.vervyle.design_system.components
 
 import android.content.Context
+import android.util.Log
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.Animatable
 import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -11,10 +14,12 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,7 +38,6 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Paint
@@ -42,20 +47,20 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.toSize
 import androidx.core.content.ContextCompat
 import com.vervyle.design_system.R
 import com.vervyle.design_system.modifiers.dropShadow
 import com.vervyle.design_system.modifiers.innerShadow
 import com.vervyle.design_system.theme.Theme
-import kotlin.math.roundToInt
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 internal data class SunAndMoonVisuals(
     val sky: Sky = DEFAULT_DAY_CLEAR_SKY,
@@ -422,7 +427,7 @@ internal data class SunAndMoonVisualsWOffset(
     val thumbOffsetX: Dp = 0.dp,
     val moonOffsetX: Dp = sunAndMoonVisuals.thumb.sun.diameter,
     val cloudsOffsetY: Dp = 0.dp,
-    val starsOffsetY: Dp = sunAndMoonVisuals.sky.height * (-1),
+    val starsOffsetY: Dp = sunAndMoonVisuals.sky.height * (-5),
 ) {
     companion object {
         val DEFAULT_PRESSED_OFFSET: Dp = 3.56.dp
@@ -431,12 +436,12 @@ internal data class SunAndMoonVisualsWOffset(
 
         val DEFAULT_SUN_STATE = SunAndMoonVisualsWOffset(
             moonOffsetX = SunAndMoonVisuals.DEFAULT_THUMB_DIAMETER,
-            starsOffsetY = SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.height * -5
+            starsOffsetY = SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.height * (-5)
         )
         val DEFAULT_SUN_PRESSED_STATE = SunAndMoonVisualsWOffset(
             thumbOffsetX = DEFAULT_PRESSED_OFFSET,
             moonOffsetX = SunAndMoonVisuals.DEFAULT_THUMB_DIAMETER,
-            starsOffsetY = SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.height * -5
+            starsOffsetY = SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.height * (-5)
         )
         val DEFAULT_MOON_STATE = SunAndMoonVisualsWOffset(
             sunAndMoonVisuals = SunAndMoonVisuals(
@@ -469,14 +474,22 @@ internal data class SunAndMoonVisualsWOffset(
     }
 }
 
-// TODO: add methods animating visuals according to user inputs
 class SunAndMoonSwitchState(
-    private var thumbState: ThumbState,
-    val onStateChanged: (SunAndMoonSwitchState) -> Unit
+    initialThumbState: ThumbState,
+    val onStateChanged: (ThumbState) -> Unit,
+    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Main)
 ) {
+    sealed interface ThumbState {
+        data object Sun : ThumbState
+        data object SunPressed : ThumbState
+        data object Moon : ThumbState
+        data object MoonPressed : ThumbState
+    }
+
     internal var sunAndMoonVisualsWOffset: SunAndMoonVisualsWOffset by mutableStateOf(
         SunAndMoonVisualsWOffset.DEFAULT_STATE
     )
+    private var thumbState by mutableStateOf(initialThumbState)
 
     init {
         sunAndMoonVisualsWOffset = when (thumbState) {
@@ -490,72 +503,116 @@ class SunAndMoonSwitchState(
         }
     }
 
+    private suspend fun animateTo(
+        target: SunAndMoonVisualsWOffset,
+    ) = coroutineScope {
+        val start = sunAndMoonVisualsWOffset
+        val moonOffsetX = Animatable(start.moonOffsetX.value)
+        val cloudsOffsetY = Animatable(start.cloudsOffsetY.value)
+        val starsOffsetY = Animatable(start.starsOffsetY.value)
+        val thumbOffsetX = Animatable(start.thumbOffsetX.value)
+        val skyColor = Animatable(start.sunAndMoonVisuals.sky.color)
 
+        launch {
+            moonOffsetX.animateTo(
+                targetValue = target.moonOffsetX.value,
+                animationSpec = tween(
+                    durationMillis = 2000,
+                    easing = FastOutSlowInEasing
+                )
+            )
+        }
+        launch {
+            cloudsOffsetY.animateTo(
+                targetValue = target.cloudsOffsetY.value,
+                animationSpec = tween(
+                    durationMillis = 2000,
+                    easing = FastOutSlowInEasing
+                )
+            )
+        }
+        launch {
+            starsOffsetY.animateTo(
+                targetValue = target.starsOffsetY.value,
+                animationSpec = tween(
+                    durationMillis = 2000,
+                    easing = FastOutSlowInEasing
+                )
+            )
+        }
+        launch {
+            thumbOffsetX.animateTo(
+                targetValue = target.thumbOffsetX.value,
+                animationSpec = tween(
+                    durationMillis = 2000,
+                    easing = FastOutSlowInEasing
+                )
+            )
+        }
+        launch {
+            skyColor.animateTo(
+                targetValue = target.sunAndMoonVisuals.sky.color,
+                animationSpec = tween(
+                    durationMillis = 2000,
+                    easing = FastOutSlowInEasing
+                ),
+                block = {
+                    sunAndMoonVisualsWOffset = target.copy(
+                        sunAndMoonVisuals = target.sunAndMoonVisuals.copy(
+                            sky = target.sunAndMoonVisuals.sky.copy(color = skyColor.value)
+                        ),
+                        thumbOffsetX = thumbOffsetX.value.dp,
+                        moonOffsetX = moonOffsetX.value.dp,
+                        cloudsOffsetY = cloudsOffsetY.value.dp,
+                        starsOffsetY = starsOffsetY.value.dp
+                    )
+                }
+            )
+        }
+    }
+
+    suspend fun onClick() {
+        val startTime = System.currentTimeMillis()
+        Log.d(TAG, "onClick started, thumbState = $thumbState")
+        when (thumbState) {
+            ThumbState.Moon -> animateTo(SunAndMoonVisualsWOffset.DEFAULT_SUN_STATE)
+            ThumbState.MoonPressed -> animateTo(SunAndMoonVisualsWOffset.DEFAULT_SUN_STATE)
+            ThumbState.Sun -> animateTo(SunAndMoonVisualsWOffset.DEFAULT_MOON_STATE)
+            ThumbState.SunPressed -> animateTo(SunAndMoonVisualsWOffset.DEFAULT_MOON_STATE)
+        }
+        thumbState = when (thumbState) {
+            ThumbState.Moon -> ThumbState.Sun
+            ThumbState.MoonPressed -> ThumbState.Sun
+            ThumbState.Sun -> ThumbState.Moon
+            ThumbState.SunPressed -> ThumbState.Moon
+        }
+        onStateChanged(thumbState)
+        val duration = System.currentTimeMillis() - startTime
+        Log.d(TAG, "onClick completed in $duration ms, new thumbState = $thumbState")
+    }
+
+    companion object {
+        private val TAG = "SunAndMoonSwitch"
+    }
 }
 
-sealed interface ThumbState {
-    data object Sun : ThumbState
-    data object SunPressed : ThumbState
-    data object Moon : ThumbState
-    data object MoonPressed : ThumbState
-}
-
-// TODO: add logic
 @Composable
 fun SunAndMoonSwitch(
     sunAndMoonSwitchState: SunAndMoonSwitchState,
     modifier: Modifier = Modifier
 ) {
+    val scope = rememberCoroutineScope()
     SunAndMoonSwitch(
         sunAndMoonSwitchState.sunAndMoonVisualsWOffset,
         modifier
             .pointerInput(sunAndMoonSwitchState) {
-                detectDragGestures(
-                    onDragStart = { offset ->
-                    },
-                    onDragEnd = {
-
-                    },
-                    onDragCancel = {
-
-                    },
-                    onDrag = { change, dragAmount ->
-
+                detectTapGestures(onTap = {
+                    scope.launch {
+                        sunAndMoonSwitchState.onClick()
                     }
-                )
+                })
             }
     )
-}
-
-@Preview
-@Composable
-private fun Test() {
-    val offsetX = remember { mutableStateOf(0f) }
-    val offsetY = remember { mutableStateOf(0f) }
-    var size by remember { mutableStateOf(Size.Zero) }
-    Box(
-        Modifier
-            .fillMaxSize()
-            .onSizeChanged { size = it.toSize() }
-    ) {
-        Box(Modifier
-            .offset { IntOffset(offsetX.value.roundToInt(), offsetY.value.roundToInt()) }
-            .size(50.dp)
-            .background(Color.Blue)
-            .pointerInput(Unit) {
-                detectDragGestures { _, dragAmount ->
-                    val original = Offset(offsetX.value, offsetY.value)
-                    val summed = original + dragAmount
-                    val newValue = Offset(
-                        x = summed.x.coerceIn(0f, size.width - 50.dp.toPx()),
-                        y = summed.y.coerceIn(0f, size.height - 50.dp.toPx())
-                    )
-                    offsetX.value = newValue.x
-                    offsetY.value = newValue.y
-                }
-            }
-        )
-    }
 }
 
 @Composable
@@ -574,29 +631,31 @@ private fun SunAndMoonSwitch(
             (SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.height / 2).toPx()
         }
     )
-    Sky(
-        sky = sunAndMoonVisualsWOffset.sunAndMoonVisuals.sky,
-        frontClouds = sunAndMoonVisualsWOffset.sunAndMoonVisuals.frontClouds,
-        backClouds = sunAndMoonVisualsWOffset.sunAndMoonVisuals.backClouds,
-        cloudsOffsetY = sunAndMoonVisualsWOffset.cloudsOffsetY,
-        stars = sunAndMoonVisualsWOffset.sunAndMoonVisuals.stars,
-        starsOffsetY = sunAndMoonVisualsWOffset.starsOffsetY,
-        modifier = modifier
-            .rays(
-                center = raysOffset,
-                rays = sunAndMoonVisualsWOffset.sunAndMoonVisuals.rays,
-                RoundedCornerShape(200.dp)
-            )
-    )
-    Thumb(
-        thumb = sunAndMoonVisualsWOffset.sunAndMoonVisuals.thumb,
-        moonOffsetX = sunAndMoonVisualsWOffset.moonOffsetX,
-        modifier = Modifier
-            .offset(
-                x = padding + sunAndMoonVisualsWOffset.thumbOffsetX,
-                y = padding
-            )
-    )
+    Box() {
+        Sky(
+            sky = sunAndMoonVisualsWOffset.sunAndMoonVisuals.sky,
+            frontClouds = sunAndMoonVisualsWOffset.sunAndMoonVisuals.frontClouds,
+            backClouds = sunAndMoonVisualsWOffset.sunAndMoonVisuals.backClouds,
+            cloudsOffsetY = sunAndMoonVisualsWOffset.cloudsOffsetY,
+            stars = sunAndMoonVisualsWOffset.sunAndMoonVisuals.stars,
+            starsOffsetY = sunAndMoonVisualsWOffset.starsOffsetY,
+            modifier = modifier
+                .rays(
+                    center = raysOffset,
+                    rays = sunAndMoonVisualsWOffset.sunAndMoonVisuals.rays,
+                    RoundedCornerShape(200.dp)
+                )
+        )
+        Thumb(
+            thumb = sunAndMoonVisualsWOffset.sunAndMoonVisuals.thumb,
+            moonOffsetX = sunAndMoonVisualsWOffset.moonOffsetX,
+            modifier = Modifier
+                .offset(
+                    x = padding + sunAndMoonVisualsWOffset.thumbOffsetX,
+                    y = padding
+                )
+        )
+    }
 }
 
 private fun Modifier.innerShadow(
@@ -1129,7 +1188,7 @@ private fun SwitchAnimatedPreview() {
 @Composable
 private fun SunAndMoonPreview() {
     Theme {
-        Box(
+        Column(
             Modifier
                 .fillMaxSize()
                 .background(Color(0xFFD7DEE8))
@@ -1137,7 +1196,7 @@ private fun SunAndMoonPreview() {
         ) {
             val switchState by remember {
                 mutableStateOf(SunAndMoonSwitchState(
-                    thumbState = ThumbState.Sun,
+                    initialThumbState = SunAndMoonSwitchState.ThumbState.Sun,
                     onStateChanged = { }
                 ))
             }
