@@ -5,12 +5,8 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Transaction
 import androidx.room.Upsert
 import com.vervyle.database.model.AnnotationImageEntity
-import com.vervyle.database.model.StructureEntity
-import com.vervyle.database.model.aggregates.AnnotationWithStructure
-import com.vervyle.database.model.links.AnnotationStructureLink
 
 @Dao
 interface AnnotationDao {

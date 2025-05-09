@@ -44,84 +44,84 @@ fun AnnotatedImageView(
         }
     }
 }
+//
+//@Composable
+//fun AnnotatedImageView(
+//    image: Bitmap,
+//    annotations: List<Bitmap>,
+//    modifier: Modifier = Modifier
+//) {
+//    var shownAnnotations by remember { mutableStateOf(annotations.indices.toList()) }
+//
+//    val toggleImageIndex: (index: Int) -> Unit = { index ->
+//        shownAnnotations = if (shownAnnotations.contains(index)) {
+//            shownAnnotations.filter { it != index }
+//        } else {
+//            shownAnnotations + index
+//        }
+//    }
+//
+//    Box(
+//        modifier.clickableAnnotations(
+//            annotations
+//        ) {
+//            toggleImageIndex(it)
+//        }
+//    ) {
+//        Image(image.asImageBitmap(), null, modifier.aspectRatio(1f))
+//        shownAnnotations.forEach { index ->
+//            Image(
+//                annotations[index].asImageBitmap(),
+//                null,
+//                modifier.aspectRatio(1f)
+//            )
+//        }
+//    }
+//}
+//
+//@Composable
+//fun AnnotatedImageView(
+//    image: Bitmap,
+//    annotations: List<Bitmap>,
+//    shownAnnotationIndex: Int,
+//    modifier: Modifier = Modifier
+//) {
+//    var shownAnnotations by remember {
+//        mutableStateOf(emptyList<Int>())
+//    }
+//
+//    val toggleImageIndex: (index: Int) -> Unit = { index ->
+//        shownAnnotations = if (shownAnnotations.contains(index)) {
+//            shownAnnotations.filter { it != index }
+//        } else {
+//            shownAnnotations + index
+//        }
+//    }
+//
+//    Box(
+//        modifier.clickableAnnotations(
+//            annotations
+//        ) {
+//            toggleImageIndex(it)
+//        }
+//    ) {
+//        Image(image.asImageBitmap(), null, modifier.aspectRatio(1f))
+//        shownAnnotations.forEach { index ->
+//            Image(
+//                annotations[index].asImageBitmap(),
+//                null,
+//                modifier.aspectRatio(1f)
+//            )
+//        }
+//    }
+//}
 
 @Composable
 fun AnnotatedImageView(
     image: Bitmap,
-    annotations: List<Bitmap>,
-    modifier: Modifier = Modifier
-) {
-    var shownAnnotations by remember { mutableStateOf(annotations.indices.toList()) }
-
-    val toggleImageIndex: (index: Int) -> Unit = { index ->
-        shownAnnotations = if (shownAnnotations.contains(index)) {
-            shownAnnotations.filter { it != index }
-        } else {
-            shownAnnotations + index
-        }
-    }
-
-    Box(
-        modifier.clickableAnnotations(
-            annotations
-        ) {
-            toggleImageIndex(it)
-        }
-    ) {
-        Image(image.asImageBitmap(), null, modifier.aspectRatio(1f))
-        shownAnnotations.forEach { index ->
-            Image(
-                annotations[index].asImageBitmap(),
-                null,
-                modifier.aspectRatio(1f)
-            )
-        }
-    }
-}
-
-@Composable
-fun AnnotatedImageView(
-    image: Bitmap,
-    annotations: List<Bitmap>,
-    shownAnnotationIndex: Int,
-    modifier: Modifier = Modifier
-) {
-    var shownAnnotations by remember {
-        mutableStateOf(emptyList<Int>())
-    }
-
-    val toggleImageIndex: (index: Int) -> Unit = { index ->
-        shownAnnotations = if (shownAnnotations.contains(index)) {
-            shownAnnotations.filter { it != index }
-        } else {
-            shownAnnotations + index
-        }
-    }
-
-    Box(
-        modifier.clickableAnnotations(
-            annotations
-        ) {
-            toggleImageIndex(it)
-        }
-    ) {
-        Image(image.asImageBitmap(), null, modifier.aspectRatio(1f))
-        shownAnnotations.forEach { index ->
-            Image(
-                annotations[index].asImageBitmap(),
-                null,
-                modifier.aspectRatio(1f)
-            )
-        }
-    }
-}
-
-@Composable
-fun AnnotatedImageView(
-    image: Bitmap,
-    annotations: List<Bitmap>,
-    shownAnnotations: List<Int>,
-    shownAnnotationIndex: Int,
+    annotations: List<Pair<Int, Bitmap>>,
+    shownAnnotationsIndices: List<Int>,
+    quizzedAnnotation: Int,
     onAnnotationClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -132,18 +132,22 @@ fun AnnotatedImageView(
         )
     ) {
         Image(image.asImageBitmap(), null, modifier.aspectRatio(1f))
-        shownAnnotations.forEach { index ->
+        shownAnnotationsIndices
+            .filter { index ->
+                annotations.any {
+                    it.first == index
+                }
+            }
+            .forEach { index ->
+                Image(
+                    annotations.first { it.first == index }.second.asImageBitmap(),
+                    null,
+                    modifier.aspectRatio(1f)
+                )
+            }
+        annotations.firstOrNull { it.first == quizzedAnnotation }?.let {
             Image(
-                annotations[index].asImageBitmap(),
-                null,
-                modifier.aspectRatio(1f)
-            )
-        }
-        if (!shownAnnotations.contains(shownAnnotationIndex)
-            && annotations.indices.contains(shownAnnotationIndex)
-        ) {
-            Image(
-                annotations[shownAnnotationIndex].asImageBitmap(),
+                it.second.asImageBitmap(),
                 null,
                 modifier.aspectRatio(1f)
             )

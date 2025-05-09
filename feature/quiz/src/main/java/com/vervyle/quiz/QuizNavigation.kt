@@ -4,7 +4,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -42,8 +45,7 @@ fun NavGraphBuilder.quizScreen() {
         route = QUIZ_ROUTE,
         arguments = listOf(
             navArgument(QUIZ_ID_ARG) {
-                defaultValue = "dataset_brain_new"
-                nullable = false
+                nullable = true
                 type = NavType.StringType
             }
         )
@@ -57,8 +59,11 @@ internal fun QuizRoute(
     viewModel: QuizViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val shownStructures by viewModel.indexToActiveStructuresMapping.collectAsStateWithLifecycle()
-    val shownAnnotationIndex by viewModel.currentAnnotation.collectAsStateWithLifecycle(0)
+    val shownStructures by viewModel.shownAnnotations.collectAsStateWithLifecycle()
+//    val shownAnnotationIndex by viewModel.currentAnnotation.collectAsStateWithLifecycle(0)
+    val shownAnnotationIndex by remember {
+        mutableIntStateOf(0)
+    }
     val activePlane by viewModel.activePlane.collectAsStateWithLifecycle()
     val planeToIndexMapping by viewModel.planeToIndexMapping.collectAsStateWithLifecycle()
 
@@ -68,7 +73,7 @@ internal fun QuizRoute(
             shownStructures = shownStructures,
             activePlane = activePlane,
             planeToIndexMapping = planeToIndexMapping,
-            shownAnnotationIndex = shownAnnotationIndex,
+            quizzedStructure = shownAnnotationIndex,
             onUserInput = viewModel::onUserInput,
             onPlaneChange = viewModel::onActivePlaneChange,
             onPlaneIndexChange = viewModel::onPlaneIndexChange,

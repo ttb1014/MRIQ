@@ -41,13 +41,13 @@ dependencies {
     implementation(project(":core:database"))
     implementation(project(":core:model"))
     implementation(project(":core:network"))
-    implementation(project(":core:local"))
+    implementation(project(":core:disk"))
     implementation(project(":mock"))
 
     implementation(libs.hilt.android)
     implementation(libs.gson)
 
-    kapt(libs.dagger.hilt.android.compiler)
+    kapt(libs.hilt.android.compiler)
 
     implementation(libs.kotlinx.datetime)
 

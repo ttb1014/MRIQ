@@ -43,7 +43,7 @@ dependencies {
     implementation(project(":core:model"))
 
     implementation(libs.hilt.android)
-    kapt(libs.dagger.hilt.android.compiler)
+    kapt(libs.hilt.android.compiler)
 
     implementation(libs.kotlinx.datetime)
 
