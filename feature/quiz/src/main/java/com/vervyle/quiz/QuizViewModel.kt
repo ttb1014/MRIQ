@@ -84,6 +84,7 @@ class QuizViewModel @Inject constructor(
         MutableStateFlow(emptyList<Int>())
 
     init {
+        // TODO: launch only after uiState is loaded
         viewModelScope.launch {
             while (isActive) {
                 val nextVals = generateNextNQuestions(10)
