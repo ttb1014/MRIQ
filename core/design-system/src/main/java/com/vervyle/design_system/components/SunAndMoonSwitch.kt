@@ -18,7 +18,6 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -56,8 +55,6 @@ import com.vervyle.design_system.R
 import com.vervyle.design_system.modifiers.dropShadow
 import com.vervyle.design_system.modifiers.innerShadow
 import com.vervyle.design_system.theme.Theme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
@@ -224,6 +221,7 @@ internal data class SunAndMoonVisuals(
         val color: Color,
     )
 
+    @Suppress("Warnings")
     companion object {
         val DEFAULT_WIDTH = 65.71.dp
         val DEFAULT_HEIGHT = 26.dp
@@ -412,7 +410,7 @@ internal data class SunAndMoonVisuals(
             ),
             Cloud(
                 offsetX = 46.66.dp,
-                offsetY = -12.11.dp,
+                offsetY = (-12.11).dp,
                 diameterX = 28.14.dp,
                 diameterY = 27.78.dp,
                 color = DEFAULT_BACK_CLOUD_COLOR
@@ -428,6 +426,7 @@ internal data class SunAndMoonVisualsWOffset(
     val cloudsOffsetY: Dp = 0.dp,
     val starsOffsetY: Dp = sunAndMoonVisuals.sky.height * (-5),
 ) {
+    @Suppress("Warnings")
     companion object {
         val DEFAULT_PRESSED_OFFSET: Dp = 3.56.dp
         val DEFAULT_PADDING: Dp = (SunAndMoonVisuals.DEFAULT_HEIGHT -
@@ -475,8 +474,7 @@ internal data class SunAndMoonVisualsWOffset(
 
 class SunAndMoonSwitchState(
     initialThumbState: ThumbState,
-    val onStateChanged: (ThumbState) -> Unit,
-    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Main)
+    val onStateChanged: (ThumbState) -> Unit
 ) {
     sealed interface ThumbState {
         data object Sun : ThumbState
@@ -591,7 +589,7 @@ class SunAndMoonSwitchState(
     }
 
     companion object {
-        private val TAG = "SunAndMoonSwitch"
+        private const val TAG = "SunAndMoonSwitch"
     }
 }
 
@@ -722,12 +720,12 @@ private fun Sky(
             .clouds(
                 shape = RoundedCornerShape(200.dp),
                 offset = Offset(0f, cloudsOffsetY.value),
-                clouds = SunAndMoonVisuals.DEFAULT_BACK_CLOUDS
+                clouds = frontClouds
             )
             .clouds(
                 shape = RoundedCornerShape(200.dp),
                 offset = Offset(0f, cloudsOffsetY.value),
-                clouds = SunAndMoonVisuals.DEFAULT_FRONT_CLOUDS
+                clouds = backClouds
             )
             .stars(
                 shape = RoundedCornerShape(200.dp),
@@ -956,7 +954,6 @@ private fun MoonPreview() {
 @Composable
 private fun ThumbPreview() {
     val infiniteTransition = rememberInfiniteTransition()
-    val density = LocalDensity.current
     val moonOffsetX by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = SunAndMoonVisuals.DEFAULT_SUN.diameter.value,
@@ -1131,7 +1128,6 @@ private fun SunWithRaysPreview() {
 private fun SwitchAnimatedPreview() {
     Theme {
         val infiniteTransition = rememberInfiniteTransition()
-        val density = LocalDensity.current
         val padding = (SunAndMoonVisuals.DEFAULT_HEIGHT -
                 SunAndMoonVisuals.DEFAULT_THUMB_DIAMETER) / 2
         val thumbMaxOffsetX = SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.width -
@@ -1152,9 +1148,7 @@ private fun SwitchAnimatedPreview() {
 
         val thumbOffsetX by infiniteTransition.animateFloat(
             initialValue = 0f,
-            targetValue = with(density) {
-                thumbMaxOffsetX.value
-            },
+            targetValue = thumbMaxOffsetX.value,
             animationSpec = infiniteRepeatable(
                 animation = tween(
                     durationMillis = 2000,
