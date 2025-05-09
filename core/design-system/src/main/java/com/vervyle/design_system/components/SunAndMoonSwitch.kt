@@ -11,6 +11,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +22,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,6 +32,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Paint
@@ -36,18 +41,23 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
 import androidx.core.content.ContextCompat
 import com.vervyle.design_system.R
 import com.vervyle.design_system.modifiers.dropShadow
 import com.vervyle.design_system.modifiers.innerShadow
 import com.vervyle.design_system.theme.Theme
+import kotlin.math.roundToInt
 
-private data class SunAndMoonVisuals(
+internal data class SunAndMoonVisuals(
     val sky: Sky = DEFAULT_DAY_CLEAR_SKY,
     val thumb: Thumb = DEFAULT_THUMB,
     val stars: List<Star> = DEFAULT_STARS,
@@ -407,13 +417,146 @@ private data class SunAndMoonVisuals(
     }
 }
 
-private data class SunAndMoonVisualsWOffset(
-    val sunAndMoonVisuals: SunAndMoonVisuals = SunAndMoonVisuals(),
+internal data class SunAndMoonVisualsWOffset(
+    internal val sunAndMoonVisuals: SunAndMoonVisuals = SunAndMoonVisuals(),
     val thumbOffsetX: Dp = 0.dp,
     val moonOffsetX: Dp = sunAndMoonVisuals.thumb.sun.diameter,
     val cloudsOffsetY: Dp = 0.dp,
     val starsOffsetY: Dp = sunAndMoonVisuals.sky.height * (-1),
-)
+) {
+    companion object {
+        val DEFAULT_PRESSED_OFFSET: Dp = 3.56.dp
+        val DEFAULT_PADDING: Dp = (SunAndMoonVisuals.DEFAULT_HEIGHT -
+                SunAndMoonVisuals.DEFAULT_THUMB_DIAMETER) / 2
+
+        val DEFAULT_SUN_STATE = SunAndMoonVisualsWOffset(
+            moonOffsetX = SunAndMoonVisuals.DEFAULT_THUMB_DIAMETER,
+            starsOffsetY = SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.height * -5
+        )
+        val DEFAULT_SUN_PRESSED_STATE = SunAndMoonVisualsWOffset(
+            thumbOffsetX = DEFAULT_PRESSED_OFFSET,
+            moonOffsetX = SunAndMoonVisuals.DEFAULT_THUMB_DIAMETER,
+            starsOffsetY = SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.height * -5
+        )
+        val DEFAULT_MOON_STATE = SunAndMoonVisualsWOffset(
+            sunAndMoonVisuals = SunAndMoonVisuals(
+                sky = SunAndMoonVisuals.Sky(
+                    color = SunAndMoonVisuals.DEFAULT_NIGHT_SKY_COLOR
+                )
+            ),
+            thumbOffsetX = SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.width -
+                    DEFAULT_PADDING * 2 -
+                    SunAndMoonVisuals.DEFAULT_THUMB_DIAMETER,
+            moonOffsetX = 0.dp,
+            cloudsOffsetY = SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.height * 5,
+            starsOffsetY = 0.dp
+        )
+        val DEFAULT_MOON_PRESSED_STATE = SunAndMoonVisualsWOffset(
+            sunAndMoonVisuals = SunAndMoonVisuals(
+                sky = SunAndMoonVisuals.Sky(
+                    color = SunAndMoonVisuals.DEFAULT_NIGHT_SKY_COLOR
+                )
+            ),
+            thumbOffsetX = SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.width -
+                    DEFAULT_PADDING * 2 -
+                    SunAndMoonVisuals.DEFAULT_THUMB_DIAMETER -
+                    DEFAULT_PRESSED_OFFSET,
+            moonOffsetX = 0.dp,
+            cloudsOffsetY = SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.height * 5,
+            starsOffsetY = 0.dp
+        )
+        val DEFAULT_STATE = DEFAULT_SUN_STATE
+    }
+}
+
+// TODO: add methods animating visuals according to user inputs
+class SunAndMoonSwitchState(
+    private var thumbState: ThumbState,
+    val onStateChanged: (SunAndMoonSwitchState) -> Unit
+) {
+    internal var sunAndMoonVisualsWOffset: SunAndMoonVisualsWOffset by mutableStateOf(
+        SunAndMoonVisualsWOffset.DEFAULT_STATE
+    )
+
+    init {
+        sunAndMoonVisualsWOffset = when (thumbState) {
+            ThumbState.Moon -> SunAndMoonVisualsWOffset.DEFAULT_MOON_STATE
+
+            ThumbState.MoonPressed -> SunAndMoonVisualsWOffset.DEFAULT_MOON_PRESSED_STATE
+
+            ThumbState.Sun -> SunAndMoonVisualsWOffset.DEFAULT_SUN_STATE
+
+            ThumbState.SunPressed -> SunAndMoonVisualsWOffset.DEFAULT_SUN_PRESSED_STATE
+        }
+    }
+
+
+}
+
+sealed interface ThumbState {
+    data object Sun : ThumbState
+    data object SunPressed : ThumbState
+    data object Moon : ThumbState
+    data object MoonPressed : ThumbState
+}
+
+// TODO: add logic
+@Composable
+fun SunAndMoonSwitch(
+    sunAndMoonSwitchState: SunAndMoonSwitchState,
+    modifier: Modifier = Modifier
+) {
+    SunAndMoonSwitch(
+        sunAndMoonSwitchState.sunAndMoonVisualsWOffset,
+        modifier
+            .pointerInput(sunAndMoonSwitchState) {
+                detectDragGestures(
+                    onDragStart = { offset ->
+                    },
+                    onDragEnd = {
+
+                    },
+                    onDragCancel = {
+
+                    },
+                    onDrag = { change, dragAmount ->
+
+                    }
+                )
+            }
+    )
+}
+
+@Preview
+@Composable
+private fun Test() {
+    val offsetX = remember { mutableStateOf(0f) }
+    val offsetY = remember { mutableStateOf(0f) }
+    var size by remember { mutableStateOf(Size.Zero) }
+    Box(
+        Modifier
+            .fillMaxSize()
+            .onSizeChanged { size = it.toSize() }
+    ) {
+        Box(Modifier
+            .offset { IntOffset(offsetX.value.roundToInt(), offsetY.value.roundToInt()) }
+            .size(50.dp)
+            .background(Color.Blue)
+            .pointerInput(Unit) {
+                detectDragGestures { _, dragAmount ->
+                    val original = Offset(offsetX.value, offsetY.value)
+                    val summed = original + dragAmount
+                    val newValue = Offset(
+                        x = summed.x.coerceIn(0f, size.width - 50.dp.toPx()),
+                        y = summed.y.coerceIn(0f, size.height - 50.dp.toPx())
+                    )
+                    offsetX.value = newValue.x
+                    offsetY.value = newValue.y
+                }
+            }
+        )
+    }
+}
 
 @Composable
 private fun SunAndMoonSwitch(
@@ -977,6 +1120,30 @@ private fun SwitchAnimatedPreview() {
         ) {
             SunAndMoonSwitch(
                 sunAndMoonVisualsWOffset
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun SunAndMoonPreview() {
+    Theme {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(Color(0xFFD7DEE8))
+                .padding(16.dp)
+        ) {
+            val switchState by remember {
+                mutableStateOf(SunAndMoonSwitchState(
+                    thumbState = ThumbState.Sun,
+                    onStateChanged = { }
+                ))
+            }
+            SunAndMoonSwitch(
+                switchState,
+                Modifier
             )
         }
     }
