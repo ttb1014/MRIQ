@@ -27,7 +27,7 @@ class DatabaseInstrumentedTest {
     internal lateinit var dao: DatasetDao
 
     @Inject
-    private lateinit var network: MriqNetworkDataSource
+    internal lateinit var network: MriqNetworkDataSource
 
     @Before
     fun setup() {
@@ -46,9 +46,8 @@ class DatabaseInstrumentedTest {
         assert(result!!.name == datasetName)
     }
 
-    // TODO: написать тест
     @Test
     fun testAggregatesDao() = runBlocking {
-        
+
     }
 }

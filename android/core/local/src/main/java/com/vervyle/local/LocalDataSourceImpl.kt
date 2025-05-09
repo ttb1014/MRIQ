@@ -9,12 +9,11 @@ import com.vervyle.database.model.StructureEntity
 import com.vervyle.database.model.aggregates.AnnotationWithStructure
 import com.vervyle.database.model.aggregates.DatasetWithAnnotatedImages
 import com.vervyle.database.model.aggregates.MedicalImageWithAnnotations
-import com.vervyle.local.disk.DiskFileManager
+import com.vervyle.disk.DiskManager
 import com.vervyle.model.AnnotatedImage
 import com.vervyle.model.Plane
 import com.vervyle.model.QuizScreenResource
 import com.vervyle.model.StructureAnnotation
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -26,28 +25,31 @@ import javax.inject.Inject
 internal class LocalDataSourceImpl @Inject constructor(
     private val aggregatesDao: AggregatesDao,
     private val datasetDao: DatasetDao,
-    private val diskFileManager: DiskFileManager,
+    private val diskManager: DiskManager,
 ) : LocalDataSource {
 
     override fun getQuizScreenResourceByDatasetName(name: String): Flow<QuizScreenResource> = flow {
-        val dataset = datasetDao.getDatasetWithAnnotatedImagesByName(name)
+        val datasetWithAnnotatedImages = datasetDao.getDatasetWithAnnotatedImagesByName(name)
 
-        dataset?.let { data ->
+        datasetWithAnnotatedImages?.let { data ->
             val q = QuizScreenResource(
                 quizName = data.dataset.name,
                 annotatedImages = Plane.entries.associateWith { plane ->
                     data.annotatedImages
                         .filter { it.image.plane == plane }
-                        .map { annotatedImage ->
+                        .map { medicalImageWithAnnotations ->
                             AnnotatedImage(
-                                image = diskFileManager.loadImage(annotatedImage.image.imagePath)
-                                    ?: throw CancellationException("image ${annotatedImage.image.imagePath} not found on disk"),
-                                annotations = annotatedImage.annotations.map { structureAnnotation ->
+                                image = diskManager.loadImage(medicalImageWithAnnotations.image.imagePath)
+                                    ?: throw RuntimeException("image ${medicalImageWithAnnotations.image.imagePath} not found on disk"),
+                                index = medicalImageWithAnnotations.image.imageIndex,
+                                annotations = medicalImageWithAnnotations.annotations.map { annotationWithStructure ->
                                     StructureAnnotation(
-                                        name = structureAnnotation.structure.name,
-                                        mask = diskFileManager.loadImage(structureAnnotation.annotation.imagePath)
-                                            ?: throw CancellationException("image ${annotatedImage.image.imagePath} not found on disk"),
-                                        description = structureAnnotation.structure.description
+                                        structureId = annotationWithStructure.structure.id,
+                                        baseImageIndex = medicalImageWithAnnotations.image.imageIndex,
+                                        structureName = annotationWithStructure.structure.name,
+                                        mask = diskManager.loadImage(annotationWithStructure.annotation.imagePath)
+                                            ?: throw RuntimeException("image ${medicalImageWithAnnotations.image.imagePath} not found on disk"),
+                                        structureDescription = annotationWithStructure.structure.description
                                     )
                                 }
                             )
@@ -64,15 +66,15 @@ internal class LocalDataSourceImpl @Inject constructor(
         quizScreenResource.annotatedImages.forEach { (plane, annotatedImages) ->
             annotatedImages.forEachIndexed { index, annotatedImage ->
                 coroutineScope.launch {
-                    diskFileManager.saveImage(
+                    diskManager.saveImage(
                         name = "${plane.name.uppercase()}_0000_${index.toFourDigitString()}",
                         bitmap = annotatedImage.image
                     )
                 }
                 annotatedImage.annotations.forEach { structureAnnotation ->
                     coroutineScope.launch {
-                        diskFileManager.saveImage(
-                            name = "${plane.name.uppercase()}_${index.toFourDigitString()}_${structureAnnotation.name}",
+                        diskManager.saveImage(
+                            name = "${plane.name.uppercase()}_${index.toFourDigitString()}_${structureAnnotation.structureId.toFourDigitString()}",
                             bitmap = structureAnnotation.mask
                         )
                     }
@@ -92,7 +94,7 @@ internal class LocalDataSourceImpl @Inject constructor(
             DatasetEntity(name = quizName),
             run {
                 val images = mutableListOf<MedicalImageWithAnnotations>()
-                annotatedImages.forEach { plane, annotatedImages ->
+                annotatedImages.forEach { (plane, annotatedImages) ->
                     annotatedImages.forEachIndexed { index, annotatedImage ->
                         images.add(
                             MedicalImageWithAnnotations(
@@ -107,11 +109,11 @@ internal class LocalDataSourceImpl @Inject constructor(
                                         annotations.add(
                                             AnnotationWithStructure(
                                                 annotation = AnnotationImageEntity(
-                                                    imagePath = "${plane.name.uppercase()}_${index.toFourDigitString()}_${structureAnnotation.name}"
+                                                    imagePath = "${plane.name.uppercase()}_${index.toFourDigitString()}_${structureAnnotation.structureId.toFourDigitString()}"
                                                 ),
                                                 structure = StructureEntity(
-                                                    name = structureAnnotation.name,
-                                                    description = structureAnnotation.description
+                                                    name = structureAnnotation.structureName,
+                                                    description = structureAnnotation.structureDescription
                                                 )
                                             )
                                         )

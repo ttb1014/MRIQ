@@ -6,10 +6,6 @@ import com.vervyle.data.repository.OfflineFirstQuizRepository
 import com.vervyle.data.repository.QuizFeedRepository
 import com.vervyle.data.repository.QuizRecordsRepository
 import com.vervyle.data.repository.QuizRepository
-import com.vervyle.data.repository.old_or_bad.AssetRepository
-import com.vervyle.data.repository.old_or_bad.AssetRepositoryImpl
-import com.vervyle.data.repository.old_or_bad.StructuredMriDataRepository
-import com.vervyle.data.repository.old_or_bad.StructuredMriDataRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -23,21 +19,6 @@ abstract class DataModule {
     internal abstract fun bindsQuizRepository(
         offlineFirstQuizRepository: OfflineFirstQuizRepository
     ): QuizRepository
-
-//    @Binds
-//    internal abstract fun bindsQuizRepository(
-//        fakeQuizRepository: FakeQuizRepository
-//    ): QuizRepository
-
-    @Binds
-    internal abstract fun bindsStructuredMriDataRepository(
-        structuredMriDataRepositoryImpl: StructuredMriDataRepositoryImpl
-    ): StructuredMriDataRepository
-
-    @Binds
-    internal abstract fun bindsAssetRepository(
-        assetRepositoryImpl: AssetRepositoryImpl
-    ): AssetRepository
 
     @Binds
     internal abstract fun bindsQuizFeedRepository(

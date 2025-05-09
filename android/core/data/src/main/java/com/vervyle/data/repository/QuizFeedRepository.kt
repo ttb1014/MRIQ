@@ -5,5 +5,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface QuizFeedRepository {
 
-    fun observeAll() : Flow<List<UserQuizResource>>
+    fun observeAll(): Flow<List<UserQuizResource>>
 }
