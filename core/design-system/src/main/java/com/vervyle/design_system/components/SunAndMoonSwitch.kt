@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -603,15 +602,13 @@ fun SunAndMoonSwitch(
 ) {
     val scope = rememberCoroutineScope()
     SunAndMoonSwitch(
-        sunAndMoonSwitchState.sunAndMoonVisualsWOffset,
-        modifier
-            .pointerInput(sunAndMoonSwitchState) {
-                detectTapGestures(onTap = {
-                    scope.launch {
-                        sunAndMoonSwitchState.onClick()
-                    }
-                })
+        sunAndMoonVisualsWOffset = sunAndMoonSwitchState.sunAndMoonVisualsWOffset,
+        modifier = modifier,
+        onThumbTap = {
+            scope.launch {
+                sunAndMoonSwitchState.onClick()
             }
+        }
     )
 }
 
@@ -619,6 +616,7 @@ fun SunAndMoonSwitch(
 private fun SunAndMoonSwitch(
     sunAndMoonVisualsWOffset: SunAndMoonVisualsWOffset,
     modifier: Modifier = Modifier,
+    onThumbTap: () -> Unit = { },
 ) {
     val padding = (sunAndMoonVisualsWOffset.sunAndMoonVisuals.sky.height -
             sunAndMoonVisualsWOffset.sunAndMoonVisuals.thumb.sun.diameter) / 2
@@ -631,7 +629,7 @@ private fun SunAndMoonSwitch(
             (SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.height / 2).toPx()
         }
     )
-    Box() {
+    Box {
         Sky(
             sky = sunAndMoonVisualsWOffset.sunAndMoonVisuals.sky,
             frontClouds = sunAndMoonVisualsWOffset.sunAndMoonVisuals.frontClouds,
@@ -654,6 +652,11 @@ private fun SunAndMoonSwitch(
                     x = padding + sunAndMoonVisualsWOffset.thumbOffsetX,
                     y = padding
                 )
+                .pointerInput(onThumbTap) {
+                    detectTapGestures(onTap = {
+                        onThumbTap()
+                    })
+                }
         )
     }
 }
@@ -795,29 +798,31 @@ private fun Thumb(
     moonOffsetX: Dp,
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier
-            .size(thumb.sun.diameter)
-            .dropShadow(
-                CircleShape,
-                thumb.dropShadowDown
+    Box(modifier) {
+        Box(
+            Modifier
+                .size(thumb.sun.diameter)
+                .dropShadow(
+                    CircleShape,
+                    thumb.dropShadowDown
+                )
+                .dropShadow(
+                    CircleShape,
+                    thumb.dropShadowDownDepth
+                )
+        ) {
+            Sun(thumb.sun)
+        }
+        Box(
+            Modifier
+                .size(thumb.sun.diameter)
+                .clip(CircleShape)
+        ) {
+            Moon(
+                thumb.moon,
+                Modifier.offset(x = moonOffsetX)
             )
-            .dropShadow(
-                CircleShape,
-                thumb.dropShadowDownDepth
-            )
-    ) {
-        Sun(thumb.sun)
-    }
-    Box(
-        modifier
-            .size(thumb.sun.diameter)
-            .clip(CircleShape)
-    ) {
-        Moon(
-            thumb.moon,
-            Modifier.offset(x = moonOffsetX)
-        )
+        }
     }
 }
 
@@ -933,21 +938,6 @@ private fun Modifier.stars(
 
 @Preview
 @Composable
-private fun SkyPreview() {
-    Theme {
-        Sky(
-            SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY,
-            SunAndMoonVisuals.DEFAULT_FRONT_CLOUDS,
-            SunAndMoonVisuals.DEFAULT_BACK_CLOUDS,
-            0.dp,
-            SunAndMoonVisuals.DEFAULT_STARS,
-            SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.height * -3
-        )
-    }
-}
-
-@Preview
-@Composable
 private fun SunPreview() {
     Theme {
         Sun(SunAndMoonVisuals.DEFAULT_SUN)
@@ -969,9 +959,7 @@ private fun ThumbPreview() {
     val density = LocalDensity.current
     val moonOffsetX by infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = with(density) {
-            SunAndMoonVisuals.DEFAULT_SUN.diameter.toPx()
-        },
+        targetValue = SunAndMoonVisuals.DEFAULT_SUN.diameter.value,
         animationSpec = infiniteRepeatable(
             animation = tween(
                 durationMillis = 1000,
@@ -981,26 +969,16 @@ private fun ThumbPreview() {
         )
     )
     Theme {
-        Thumb(
-            SunAndMoonVisuals.DEFAULT_THUMB,
-            moonOffsetX = moonOffsetX.dp
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun RaysPreview() {
-    Theme {
         Box(
             Modifier
-                .size(SunAndMoonVisuals.DEFAULT_WIDTH, SunAndMoonVisuals.DEFAULT_HEIGHT)
-                .rays(
-                    Offset.Zero,
-                    SunAndMoonVisuals.DEFAULT_RAYS,
-                    RoundedCornerShape(200.dp)
-                )
-        )
+                .background(Color(0xFFD7DEE8))
+                .padding(3.dp)
+        ) {
+            Thumb(
+                SunAndMoonVisuals.DEFAULT_THUMB,
+                moonOffsetX = moonOffsetX.dp
+            )
+        }
     }
 }
 
@@ -1045,6 +1023,69 @@ private fun StarsPreview() {
                 SunAndMoonVisuals.DEFAULT_STARS
             )
     )
+}
+
+@Preview
+@Composable
+private fun DaySkyPreview() {
+    Theme {
+        Box(
+            Modifier
+                .background(Color(0xFFD7DEE8))
+                .padding(3.dp)
+        ) {
+            Sky(
+                SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY,
+                SunAndMoonVisuals.DEFAULT_FRONT_CLOUDS,
+                SunAndMoonVisuals.DEFAULT_BACK_CLOUDS,
+                0.dp,
+                SunAndMoonVisuals.DEFAULT_STARS,
+                SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.height * -3
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun NightSkyPreview() {
+    Theme {
+        Box(
+            Modifier
+                .background(Color(0xFFD7DEE8))
+                .padding(3.dp)
+        ) {
+            Sky(
+                SunAndMoonVisuals.DEFAULT_NIGHT_CLEAR_SKY,
+                SunAndMoonVisuals.DEFAULT_FRONT_CLOUDS,
+                SunAndMoonVisuals.DEFAULT_BACK_CLOUDS,
+                SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.height * 5,
+                SunAndMoonVisuals.DEFAULT_STARS,
+                0.dp
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun RaysPreview() {
+    Theme {
+        Box(
+            Modifier
+                .size(SunAndMoonVisuals.DEFAULT_WIDTH, SunAndMoonVisuals.DEFAULT_HEIGHT)
+                .rays(
+                    Offset(
+                        x = 0f,
+                        y = with(LocalDensity.current) {
+                            (SunAndMoonVisuals.DEFAULT_HEIGHT / 2).toPx()
+                        }
+                    ),
+                    SunAndMoonVisuals.DEFAULT_RAYS,
+                    RoundedCornerShape(200.dp)
+                )
+        )
+    }
 }
 
 @Preview
@@ -1173,12 +1214,11 @@ private fun SwitchAnimatedPreview() {
 
         Box(
             Modifier
-                .fillMaxSize()
                 .background(Color(0xFFD7DEE8))
-                .padding(16.dp)
+                .padding(3.dp)
         ) {
             SunAndMoonSwitch(
-                sunAndMoonVisualsWOffset
+                sunAndMoonVisualsWOffset,
             )
         }
     }
@@ -1190,9 +1230,8 @@ private fun SunAndMoonPreview() {
     Theme {
         Column(
             Modifier
-                .fillMaxSize()
                 .background(Color(0xFFD7DEE8))
-                .padding(16.dp)
+                .padding(3.dp)
         ) {
             val switchState by remember {
                 mutableStateOf(SunAndMoonSwitchState(
