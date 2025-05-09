@@ -38,6 +38,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.vervyle.design_system.modifiers.dropShadow
+import com.vervyle.design_system.modifiers.innerShadow
 import com.vervyle.design_system.theme.Theme
 import kotlin.math.roundToInt
 
@@ -87,9 +89,6 @@ fun SunAndMoonSwitch(
     val dropShadowColorUp = Color(0, 0, 0, (255 * 0.25).roundToInt())
     val dropShadowColorDown = Color(255, 255, 255, (255 * 0.6).roundToInt())
     val tripDistance = width - (padding + thumbRadius) * 2
-
-    assert(thumbRadius * 2 <= height)
-
     val density = LocalDensity.current
     val transition = rememberInfiniteTransition()
     val offsetX by transition.animateFloat(
@@ -100,6 +99,9 @@ fun SunAndMoonSwitch(
             repeatMode = RepeatMode.Reverse,
         )
     )
+
+    assert(thumbRadius * 2 <= height)
+
     Box(
         modifier = Modifier,
         contentAlignment = Alignment.TopStart,
@@ -144,6 +146,7 @@ fun SunAndMoonSwitch(
             ) {
             }
         }
+
         // rays
         Box(
             modifier = Modifier
@@ -171,6 +174,7 @@ fun SunAndMoonSwitch(
                     )
             )
         }
+
         // clouds
         Box(
             modifier = Modifier
@@ -192,6 +196,7 @@ fun SunAndMoonSwitch(
                 )
             )
         }
+
         // thumb
         Sun(
             radius = thumbRadius,
@@ -243,74 +248,6 @@ fun Sun(
             .size(radius * 2)
             .background(Color(0xFFF1C428), RoundedCornerShape(200.dp))
     )
-}
-
-fun Modifier.dropShadow(
-    shape: Shape,
-    color: Color = Color.Black.copy(0.25f),
-    blur: Dp = 4.dp,
-    offsetX: Dp = 0.dp,
-    offsetY: Dp = 4.dp,
-    spread: Dp = 0.dp
-) = this.drawBehind {
-    val shadowSize = Size(size.width + spread.toPx(), size.height + spread.toPx())
-    val shadowOutline = shape.createOutline(shadowSize, layoutDirection, this)
-    // Create a Paint object
-    val paint = Paint()
-    // Apply specified color
-    paint.color = color
-
-    // Check for valid blur radius
-    if (blur.toPx() > 0) {
-        paint.asFrameworkPaint().apply {
-            // Apply blur to the Paint
-            maskFilter = BlurMaskFilter(blur.toPx(), BlurMaskFilter.Blur.NORMAL)
-        }
-    }
-
-    drawIntoCanvas { canvas ->
-        // Save the canvas state
-        canvas.save()
-        // Translate to specified offsets
-        canvas.translate(offsetX.toPx(), offsetY.toPx())
-        // Draw the shadow
-        canvas.drawOutline(shadowOutline, paint)
-        // Restore the canvas state
-        canvas.restore()
-    }
-}
-
-fun Modifier.innerShadow(
-    shape: Shape,
-    color: Color = Color.Black,
-    blur: Dp = 3.dp,
-    offsetX: Dp = 3.dp,
-    offsetY: Dp = 3.dp,
-    spread: Dp = 0.dp
-) = this.drawWithContent {
-    drawContent()
-    drawIntoCanvas { canvas ->
-        val shadowSize = Size(size.width + spread.toPx(), size.height + spread.toPx())
-        val shadowOutline = shape.createOutline(shadowSize, layoutDirection, this)
-        val paint = Paint()
-        paint.color = color
-
-        canvas.saveLayer(size.toRect(), paint)
-        canvas.drawOutline(shadowOutline, paint)
-
-        paint.asFrameworkPaint().apply {
-            this.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
-            if (blur.toPx() > 0) {
-                maskFilter = BlurMaskFilter(blur.toPx(), BlurMaskFilter.Blur.NORMAL)
-            }
-        }
-
-        paint.color = Color.Black
-
-        canvas.translate(offsetX.toPx(), offsetY.toPx())
-        canvas.drawOutline(shadowOutline, paint)
-        canvas.restore()
-    }
 }
 
 fun Modifier.rays(
