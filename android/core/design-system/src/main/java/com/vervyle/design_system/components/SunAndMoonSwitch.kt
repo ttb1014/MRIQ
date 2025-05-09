@@ -2,7 +2,8 @@ package com.vervyle.design_system.components
 
 import android.content.Context
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.core.InfiniteRepeatableSpec
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -12,7 +13,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,7 +47,14 @@ import com.vervyle.design_system.modifiers.dropShadow
 import com.vervyle.design_system.modifiers.innerShadow
 import com.vervyle.design_system.theme.Theme
 
-class SunAndMoon {
+private data class SunAndMoonVisuals(
+    val sky: Sky = DEFAULT_DAY_CLEAR_SKY,
+    val thumb: Thumb = DEFAULT_THUMB,
+    val stars: List<Star> = DEFAULT_STARS,
+    val rays: List<Ray> = DEFAULT_RAYS,
+    val frontClouds: List<Cloud> = DEFAULT_FRONT_CLOUDS,
+    val backClouds: List<Cloud> = DEFAULT_BACK_CLOUDS,
+) {
     data class Shadow(
         val offsetX: Dp,
         val offsetY: Dp,
@@ -84,7 +94,7 @@ class SunAndMoon {
             blur = 0.71.dp,
             spread = 0.dp,
             color = DEFAULT_BLACK_SHADOW_COLOR
-        )
+        ),
     )
 
     data class Thumb(
@@ -216,14 +226,16 @@ class SunAndMoon {
         val DEFAULT_FRONT_CLOUD_COLOR = Color(0xFFEFFEFF)
         val DEFAULT_BACK_CLOUD_COLOR = Color(0x99EFFEFF)
 
-        //TODO: alpha should be 25%
-        val DEFAULT_BLACK_SHADOW_COLOR = Color(0x99000000)
+        //TODO: alpha should be 25% as in design
+        val DEFAULT_BLACK_SHADOW_COLOR = Color(0x73000000)
         val DEFAULT_WHITE_SHADOW_COLOR = Color(0xF0FFFFFF)
 
-        val sky = Sky()
-        val sun = Sun()
-        val moon = Moon()
-        val stars = listOf(
+        val DEFAULT_DAY_CLEAR_SKY = Sky()
+        val DEFAULT_NIGHT_CLEAR_SKY = Sky().copy(color = DEFAULT_NIGHT_SKY_COLOR)
+        val DEFAULT_SUN = Sun()
+        val DEFAULT_MOON_WITH_DOTS = Moon()
+        val DEFAULT_THUMB = Thumb()
+        val DEFAULT_STARS = listOf(
             Star(
                 offsetX = 34.9.dp,
                 offsetY = 10.33.dp,
@@ -270,13 +282,13 @@ class SunAndMoon {
                 size = 1.78.dp,
             )
         )
-        val rays: List<Ray> = List(3) { index ->
+        val DEFAULT_RAYS: List<Ray> = List(3) { index ->
             Ray(
                 diameter = DEFAULT_THUMB_DIAMETER +
                         DEFAULT_RAY_DIAMETER_STEP * (index + 1),
             )
         }
-        val frontClouds: List<Cloud> = listOf(
+        val DEFAULT_FRONT_CLOUDS: List<Cloud> = listOf(
             Cloud(
                 offsetX = (-4.1).dp,
                 offsetY = 18.88.dp,
@@ -334,7 +346,7 @@ class SunAndMoon {
                 color = DEFAULT_FRONT_CLOUD_COLOR
             )
         )
-        val backClouds: List<Cloud> = listOf(
+        val DEFAULT_BACK_CLOUDS: List<Cloud> = listOf(
             Cloud(
                 offsetX = (-5.88).dp,
                 offsetY = 16.92.dp,
@@ -395,47 +407,58 @@ class SunAndMoon {
     }
 }
 
-sealed interface SunAndMoonSwitchState {
-    data object SunState : SunAndMoonSwitchState
-    data class SunPressedState(val offsetX: Dp) : SunAndMoonSwitchState
-    data class SunToMoonState(val offsetX: Dp) : SunAndMoonSwitchState
-    data object MoonState : SunAndMoonSwitchState
-    data class MoonPressedState(val offsetX: Dp) : SunAndMoonSwitchState
-    data class MoonToSunState(val offsetX: Dp) : SunAndMoonSwitchState
-}
+private data class SunAndMoonVisualsWOffset(
+    val sunAndMoonVisuals: SunAndMoonVisuals = SunAndMoonVisuals(),
+    val thumbOffsetX: Dp = 0.dp,
+    val moonOffsetX: Dp = sunAndMoonVisuals.thumb.sun.diameter,
+    val cloudsOffsetY: Dp = 0.dp,
+    val starsOffsetY: Dp = sunAndMoonVisuals.sky.height * (-1),
+)
 
 @Composable
-fun SunAndMoonSwitch(
+private fun SunAndMoonSwitch(
+    sunAndMoonVisualsWOffset: SunAndMoonVisualsWOffset,
     modifier: Modifier = Modifier,
 ) {
+    val padding = (sunAndMoonVisualsWOffset.sunAndMoonVisuals.sky.height -
+            sunAndMoonVisualsWOffset.sunAndMoonVisuals.thumb.sun.diameter) / 2
     val density = LocalDensity.current
-    val width: Dp = SunAndMoon.DEFAULT_WIDTH
-    val height: Dp = SunAndMoon.DEFAULT_HEIGHT
-    val thumbRadius: Dp = SunAndMoon.DEFAULT_THUMB_DIAMETER / 2
-    val padding = (height - thumbRadius * 2) / 2
-    val animationDistance = width - (padding + thumbRadius) * 2
-
-    val whiteShadowColor = SunAndMoon.DEFAULT_WHITE_SHADOW_COLOR
-    val blackShadowColor = SunAndMoon.DEFAULT_BLACK_SHADOW_COLOR
-
-    val transition = rememberInfiniteTransition()
-    val thumbPosition by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = with(density) { animationDistance.toPx() },
-        animationSpec = InfiniteRepeatableSpec(
-            animation = tween(2000),
-            repeatMode = RepeatMode.Reverse,
-        )
+    val raysOffset = Offset(
+        x = with(density) {
+            (padding + SunAndMoonVisuals.DEFAULT_SUN.diameter / 2 + sunAndMoonVisualsWOffset.thumbOffsetX).toPx()
+        },
+        y = with(density) {
+            (SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.height / 2).toPx()
+        }
     )
-
-    assert(thumbRadius * 2 <= height)
-
-
+    Sky(
+        sky = sunAndMoonVisualsWOffset.sunAndMoonVisuals.sky,
+        frontClouds = sunAndMoonVisualsWOffset.sunAndMoonVisuals.frontClouds,
+        backClouds = sunAndMoonVisualsWOffset.sunAndMoonVisuals.backClouds,
+        cloudsOffsetY = sunAndMoonVisualsWOffset.cloudsOffsetY,
+        stars = sunAndMoonVisualsWOffset.sunAndMoonVisuals.stars,
+        starsOffsetY = sunAndMoonVisualsWOffset.starsOffsetY,
+        modifier = modifier
+            .rays(
+                center = raysOffset,
+                rays = sunAndMoonVisualsWOffset.sunAndMoonVisuals.rays,
+                RoundedCornerShape(200.dp)
+            )
+    )
+    Thumb(
+        thumb = sunAndMoonVisualsWOffset.sunAndMoonVisuals.thumb,
+        moonOffsetX = sunAndMoonVisualsWOffset.moonOffsetX,
+        modifier = Modifier
+            .offset(
+                x = padding + sunAndMoonVisualsWOffset.thumbOffsetX,
+                y = padding
+            )
+    )
 }
 
-fun Modifier.innerShadow(
+private fun Modifier.innerShadow(
     shape: Shape,
-    shadow: SunAndMoon.Shadow
+    shadow: SunAndMoonVisuals.Shadow
 ) = this.innerShadow(
     shape = shape,
     color = shadow.color,
@@ -445,9 +468,9 @@ fun Modifier.innerShadow(
     spread = shadow.spread
 )
 
-fun Modifier.dropShadow(
+private fun Modifier.dropShadow(
     shape: Shape,
-    shadow: SunAndMoon.Shadow
+    shadow: SunAndMoonVisuals.Shadow
 ) = this.dropShadow(
     shape = shape,
     color = shadow.color,
@@ -458,12 +481,12 @@ fun Modifier.dropShadow(
 )
 
 @Composable
-fun Sky(
-    sky: SunAndMoon.Sky,
-    frontClouds: List<SunAndMoon.Cloud>,
-    backClouds: List<SunAndMoon.Cloud>,
+private fun Sky(
+    sky: SunAndMoonVisuals.Sky,
+    frontClouds: List<SunAndMoonVisuals.Cloud>,
+    backClouds: List<SunAndMoonVisuals.Cloud>,
     cloudsOffsetY: Dp,
-    stars: List<SunAndMoon.Star>,
+    stars: List<SunAndMoonVisuals.Star>,
     starsOffsetY: Dp,
     modifier: Modifier = Modifier
 ) {
@@ -474,16 +497,32 @@ fun Sky(
                 width = sky.width,
                 height = sky.height
             )
+            .dropShadow(
+                RoundedCornerShape(200.dp),
+                sky.dropShadowDown
+            )
+            .dropShadow(
+                RoundedCornerShape(200.dp),
+                sky.dropShadowUp
+            )
             .background(sky.color, RoundedCornerShape(200.dp))
-            .clouds(
-                shape = RoundedCornerShape(200.dp),
-                offset = Offset(0f, cloudsOffsetY.value),
-                clouds = SunAndMoon.backClouds
+            .innerShadow(
+                RoundedCornerShape(200.dp),
+                sky.innerShadowUp
+            )
+            .innerShadow(
+                RoundedCornerShape(200.dp),
+                sky.innerShadowUpDepth
             )
             .clouds(
                 shape = RoundedCornerShape(200.dp),
                 offset = Offset(0f, cloudsOffsetY.value),
-                clouds = SunAndMoon.frontClouds
+                clouds = SunAndMoonVisuals.DEFAULT_BACK_CLOUDS
+            )
+            .clouds(
+                shape = RoundedCornerShape(200.dp),
+                offset = Offset(0f, cloudsOffsetY.value),
+                clouds = SunAndMoonVisuals.DEFAULT_FRONT_CLOUDS
             )
             .stars(
                 shape = RoundedCornerShape(200.dp),
@@ -491,12 +530,13 @@ fun Sky(
                 context = context,
                 stars = stars
             )
+            .then(modifier)
     )
 }
 
 @Composable
-fun Sun(
-    sun: SunAndMoon.Sun,
+private fun Sun(
+    sun: SunAndMoonVisuals.Sun,
     modifier: Modifier = Modifier,
 ) {
     Spacer(
@@ -515,8 +555,8 @@ fun Sun(
 }
 
 @Composable
-fun Moon(
-    moon: SunAndMoon.Moon,
+private fun Moon(
+    moon: SunAndMoonVisuals.Moon,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -548,32 +588,57 @@ fun Moon(
 }
 
 @Composable
-fun Thumb(
-    sun: SunAndMoon.Sun,
-    moon: SunAndMoon.Moon,
+private fun Thumb(
+    thumb: SunAndMoonVisuals.Thumb,
     moonOffsetX: Dp,
     modifier: Modifier = Modifier
 ) {
     Box(
         modifier
-            .size(sun.diameter)
+            .size(thumb.sun.diameter)
+            .dropShadow(
+                CircleShape,
+                thumb.dropShadowDown
+            )
+            .dropShadow(
+                CircleShape,
+                thumb.dropShadowDownDepth
+            )
+    ) {
+        Sun(thumb.sun)
+    }
+    Box(
+        modifier
+            .size(thumb.sun.diameter)
             .clip(CircleShape)
     ) {
-        Sun(sun)
         Moon(
-            moon,
+            thumb.moon,
             Modifier.offset(x = moonOffsetX)
         )
     }
 }
 
-fun Modifier.rays(
+private fun Modifier.rays(
     center: Offset,
-    rays: List<SunAndMoon.Ray>
+    rays: List<SunAndMoonVisuals.Ray>,
+    shape: Shape
 ) = this.drawBehind {
     val paint = Paint()
+
+    val outline = shape.createOutline(size, layoutDirection, this)
+    val path = Path().apply {
+        when (outline) {
+            is Outline.Generic -> addPath(outline.path)
+            is Outline.Rectangle -> addRect(outline.rect)
+            is Outline.Rounded -> addRoundRect(outline.roundRect)
+        }
+    }
+
     drawIntoCanvas { canvas ->
         canvas.save()
+        canvas.clipPath(path)
+
         rays.forEach { ray ->
             paint.color = ray.color
             canvas.drawCircle(
@@ -582,14 +647,15 @@ fun Modifier.rays(
                 paint = paint
             )
         }
+
         canvas.restore()
     }
 }
 
-fun Modifier.clouds(
+private fun Modifier.clouds(
     shape: Shape,
     offset: Offset,
-    clouds: List<SunAndMoon.Cloud>
+    clouds: List<SunAndMoonVisuals.Cloud>
 ) = this.drawWithContent {
     drawContent()
     val outline = shape.createOutline(size, layoutDirection, this)
@@ -607,8 +673,8 @@ fun Modifier.clouds(
 
         val cloudPath = Path()
         clouds.forEach { cloud ->
-            val left = cloud.offsetX.toPx()
-            val top = cloud.offsetY.toPx()
+            val left = offset.x + cloud.offsetX.toPx()
+            val top = offset.y + cloud.offsetY.toPx()
             val right = left + cloud.diameterX.toPx()
             val bottom = top + cloud.diameterY.toPx()
             cloudPath.addOval(Rect(left, top, right, bottom))
@@ -623,11 +689,11 @@ fun Modifier.clouds(
     }
 }
 
-fun Modifier.stars(
+private fun Modifier.stars(
     shape: Shape,
     offset: Offset,
     context: Context,
-    stars: List<SunAndMoon.Star>
+    stars: List<SunAndMoonVisuals.Star>
 ) = this.drawWithContent {
     drawContent()
     val outline = shape.createOutline(size, layoutDirection, this)
@@ -668,12 +734,12 @@ fun Modifier.stars(
 private fun SkyPreview() {
     Theme {
         Sky(
-            SunAndMoon.sky,
-            SunAndMoon.frontClouds,
-            SunAndMoon.backClouds,
+            SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY,
+            SunAndMoonVisuals.DEFAULT_FRONT_CLOUDS,
+            SunAndMoonVisuals.DEFAULT_BACK_CLOUDS,
             0.dp,
-            SunAndMoon.stars,
-            0.dp
+            SunAndMoonVisuals.DEFAULT_STARS,
+            SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.height * -3
         )
     }
 }
@@ -682,7 +748,7 @@ private fun SkyPreview() {
 @Composable
 private fun SunPreview() {
     Theme {
-        Sun(SunAndMoon.sun)
+        Sun(SunAndMoonVisuals.DEFAULT_SUN)
     }
 }
 
@@ -690,7 +756,7 @@ private fun SunPreview() {
 @Composable
 private fun MoonPreview() {
     Theme {
-        Moon(SunAndMoon.moon)
+        Moon(SunAndMoonVisuals.DEFAULT_MOON_WITH_DOTS)
     }
 }
 
@@ -702,7 +768,7 @@ private fun ThumbPreview() {
     val moonOffsetX by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = with(density) {
-            SunAndMoon.sun.diameter.toPx()
+            SunAndMoonVisuals.DEFAULT_SUN.diameter.toPx()
         },
         animationSpec = infiniteRepeatable(
             animation = tween(
@@ -714,8 +780,7 @@ private fun ThumbPreview() {
     )
     Theme {
         Thumb(
-            SunAndMoon.sun,
-            SunAndMoon.moon,
+            SunAndMoonVisuals.DEFAULT_THUMB,
             moonOffsetX = moonOffsetX.dp
         )
     }
@@ -727,8 +792,12 @@ private fun RaysPreview() {
     Theme {
         Box(
             Modifier
-                .size(60.dp)
-                .rays(Offset.Zero, SunAndMoon.rays)
+                .size(SunAndMoonVisuals.DEFAULT_WIDTH, SunAndMoonVisuals.DEFAULT_HEIGHT)
+                .rays(
+                    Offset.Zero,
+                    SunAndMoonVisuals.DEFAULT_RAYS,
+                    RoundedCornerShape(200.dp)
+                )
         )
     }
 }
@@ -739,19 +808,19 @@ private fun CloudsPreview() {
     Box(
         Modifier
             .size(
-                SunAndMoon.DEFAULT_WIDTH,
-                SunAndMoon.DEFAULT_HEIGHT
+                SunAndMoonVisuals.DEFAULT_WIDTH,
+                SunAndMoonVisuals.DEFAULT_HEIGHT
             )
-            .background(SunAndMoon.DEFAULT_DAY_SKY_COLOR, RoundedCornerShape(200.dp))
+            .background(SunAndMoonVisuals.DEFAULT_DAY_SKY_COLOR, RoundedCornerShape(200.dp))
             .clouds(
                 shape = RoundedCornerShape(200.dp),
                 offset = Offset.Zero,
-                clouds = SunAndMoon.backClouds
+                clouds = SunAndMoonVisuals.DEFAULT_BACK_CLOUDS
             )
             .clouds(
                 shape = RoundedCornerShape(200.dp),
                 offset = Offset.Zero,
-                clouds = SunAndMoon.frontClouds
+                clouds = SunAndMoonVisuals.DEFAULT_FRONT_CLOUDS
             )
     )
 }
@@ -763,15 +832,15 @@ private fun StarsPreview() {
     Box(
         Modifier
             .size(
-                SunAndMoon.DEFAULT_WIDTH,
-                SunAndMoon.DEFAULT_HEIGHT
+                SunAndMoonVisuals.DEFAULT_WIDTH,
+                SunAndMoonVisuals.DEFAULT_HEIGHT
             )
-            .background(SunAndMoon.DEFAULT_NIGHT_SKY_COLOR, RoundedCornerShape(200.dp))
+            .background(SunAndMoonVisuals.DEFAULT_NIGHT_SKY_COLOR, RoundedCornerShape(200.dp))
             .stars(
                 RoundedCornerShape(200.dp),
                 Offset.Zero,
                 context,
-                SunAndMoon.stars
+                SunAndMoonVisuals.DEFAULT_STARS
             )
     )
 }
@@ -780,32 +849,35 @@ private fun StarsPreview() {
 @Composable
 private fun SunWithRaysPreview() {
     Theme {
+        val padding =
+            (SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.height - SunAndMoonVisuals.DEFAULT_SUN.diameter) / 2
+        val raysOffset = Offset(
+            x = with(LocalDensity.current) {
+                (padding + SunAndMoonVisuals.DEFAULT_SUN.diameter / 2).toPx()
+            },
+            y = with(LocalDensity.current) {
+                (SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.height / 2).toPx()
+            }
+        )
         Box(
             modifier = Modifier
                 .size(
-                    width = SunAndMoon.DEFAULT_WIDTH,
-                    height = SunAndMoon.DEFAULT_HEIGHT
+                    width = SunAndMoonVisuals.DEFAULT_WIDTH,
+                    height = SunAndMoonVisuals.DEFAULT_HEIGHT
+                )
+                .rays(
+                    raysOffset,
+                    SunAndMoonVisuals.DEFAULT_RAYS,
+                    RoundedCornerShape(200.dp)
                 ),
             contentAlignment = Alignment.CenterStart
         ) {
-            val raysOffset = Offset(
-                x = with(LocalDensity.current) {
-                    (SunAndMoon.sun.diameter / 2).toPx()
-                },
-                y = with(LocalDensity.current) {
-                    (SunAndMoon.sun.diameter / 2).toPx()
-                }
-            )
             val modifier = Modifier
-                .offset((SunAndMoon.DEFAULT_HEIGHT - SunAndMoon.DEFAULT_THUMB_DIAMETER) / 2)
+                .offset((SunAndMoonVisuals.DEFAULT_HEIGHT - SunAndMoonVisuals.DEFAULT_THUMB_DIAMETER) / 2)
             Sun(
-                SunAndMoon.sun,
+                SunAndMoonVisuals.DEFAULT_SUN,
                 Modifier
                     .then(modifier)
-                    .rays(
-                        raysOffset,
-                        SunAndMoon.rays
-                    )
             )
         }
     }
@@ -813,10 +885,99 @@ private fun SunWithRaysPreview() {
 
 @Preview
 @Composable
-private fun SwitchPreview() {
+private fun SwitchAnimatedPreview() {
     Theme {
         val infiniteTransition = rememberInfiniteTransition()
         val density = LocalDensity.current
+        val padding = (SunAndMoonVisuals.DEFAULT_HEIGHT -
+                SunAndMoonVisuals.DEFAULT_THUMB_DIAMETER) / 2
+        val thumbMaxOffsetX = SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.width -
+                padding * 2 -
+                SunAndMoonVisuals.DEFAULT_THUMB_DIAMETER
+        val easing = FastOutSlowInEasing
+        val moonOffsetX by infiniteTransition.animateFloat(
+            initialValue = SunAndMoonVisuals.DEFAULT_SUN.diameter.value,
+            targetValue = 0f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = 2000,
+                    easing = easing
+                ),
+                repeatMode = RepeatMode.Reverse
+            )
+        )
 
+        val thumbOffsetX by infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = with(density) {
+                thumbMaxOffsetX.value
+            },
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = 2000,
+                    easing = easing
+                ),
+                repeatMode = RepeatMode.Reverse
+            )
+        )
+
+        val cloudOffsetY by infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = (SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.height * 5).value,
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = 2000,
+                    easing = easing
+                ),
+                repeatMode = RepeatMode.Reverse
+            )
+        )
+
+        val starsOffsetY by infiniteTransition.animateFloat(
+            initialValue = (SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.height * -5).value,
+            targetValue = 0f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = 2000,
+                    easing = easing
+                ),
+                repeatMode = RepeatMode.Reverse
+            )
+        )
+
+        val skyColor by infiniteTransition.animateColor(
+            initialValue = SunAndMoonVisuals.DEFAULT_DAY_SKY_COLOR,
+            targetValue = SunAndMoonVisuals.DEFAULT_NIGHT_SKY_COLOR,
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = 2000,
+                    easing = easing
+                ),
+                repeatMode = RepeatMode.Reverse
+            )
+        )
+
+        val sunAndMoonVisualsWOffset = SunAndMoonVisualsWOffset(
+            sunAndMoonVisuals = SunAndMoonVisuals().copy(
+                sky = SunAndMoonVisuals.DEFAULT_DAY_CLEAR_SKY.copy(
+                    color = skyColor
+                )
+            ),
+            thumbOffsetX = thumbOffsetX.dp,
+            moonOffsetX = moonOffsetX.dp,
+            cloudsOffsetY = cloudOffsetY.dp,
+            starsOffsetY = starsOffsetY.dp
+        )
+
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(Color(0xFFD7DEE8))
+                .padding(16.dp)
+        ) {
+            SunAndMoonSwitch(
+                sunAndMoonVisualsWOffset
+            )
+        }
     }
 }
