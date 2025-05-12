@@ -8,7 +8,7 @@ import com.vervyle.database.model.AnnotationImageEntity
 import com.vervyle.database.model.StructureEntity
 
 @Entity(
-    tableName = "annotations",
+    tableName = "annotation_structures_links",
     primaryKeys = ["image_id", "structure_id"],
     indices = [
         Index("image_id"),

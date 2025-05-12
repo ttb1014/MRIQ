@@ -7,6 +7,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -44,4 +45,8 @@ internal class LocalQuizRecordsRepository @Inject constructor(
             structureGuessDao.insertStructureGuess(structureAnswerRecord.asLocalModel())
         }
     }
+
+    // TODO: implement
+    override fun getStructuresNumber(): Flow<Int> =
+        flowOf(89)
 }

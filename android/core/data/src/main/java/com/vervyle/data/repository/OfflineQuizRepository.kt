@@ -24,7 +24,7 @@ internal class OfflineQuizRepository @Inject constructor(
     }
 
     private suspend fun DatasetWithAnnotatedImages.asExternalModel(): QuizScreenResource {
-        return QuizScreenResource(
+        val resource = QuizScreenResource(
             quizName = this.dataset.name,
             annotatedImages = Plane.entries.associateWith { plane ->
                 this.annotatedImages
@@ -38,7 +38,10 @@ internal class OfflineQuizRepository @Inject constructor(
                                     structureId = annotationWithStructure.structure.id,
                                     baseImageIndex = medicalImageWithAnnotations.image.imageIndex,
                                     structureName = annotationWithStructure.structure.name,
-                                    mask = diskManager.loadImage(annotationWithStructure.annotation.imagePath)!!,
+                                    mask = run {
+                                        val image = diskManager.loadImage(annotationWithStructure.annotation.imagePath)
+                                        image!!
+                                    },
                                     structureDescription = annotationWithStructure.structure.description
                                 )
                             }
@@ -46,5 +49,6 @@ internal class OfflineQuizRepository @Inject constructor(
                     }
             }
         )
+        return resource
     }
 }

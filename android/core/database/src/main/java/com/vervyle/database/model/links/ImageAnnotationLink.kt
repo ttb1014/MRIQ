@@ -8,7 +8,7 @@ import com.vervyle.database.model.AnnotationImageEntity
 import com.vervyle.database.model.MedicalImageEntity
 
 @Entity(
-    tableName = "annotation_links",
+    tableName = "image_annotations_links",
     primaryKeys = ["frame_id", "annotation_id"],
     foreignKeys = [
         ForeignKey(
