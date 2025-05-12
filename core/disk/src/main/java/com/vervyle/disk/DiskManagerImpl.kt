@@ -30,10 +30,7 @@ internal class DiskFileManagerImpl @Inject constructor(
     }
 
     override suspend fun loadImage(name: String): Bitmap? {
-        var filename = name
-        if (!name.contains('.'))
-            filename = name + '.' + compressFormat.name.lowercase()
-        val file = File(cacheDir, filename)
+        val file = File(cacheDir, name)
         return if (file.exists()) {
             withContext(Dispatchers.IO) {
                 BitmapFactory.decodeFile(file.absolutePath)

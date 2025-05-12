@@ -8,7 +8,7 @@ import com.vervyle.database.model.DatasetEntity
 import com.vervyle.database.model.MedicalImageEntity
 
 @Entity(
-    tableName = "dataset_images",
+    tableName = "dataset_images_links",
     primaryKeys = ["dataset_id", "image_id"],
     foreignKeys = [
         ForeignKey(
