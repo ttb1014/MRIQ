@@ -1,6 +1,8 @@
 package com.vervyle.quiz
 
 import android.content.Context
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -26,7 +28,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -45,8 +46,7 @@ class QuizViewModel @Inject constructor(
 
     private val generatedQuestionsChannel = Channel<Int>(DEFAULT_CHANNEL_CAPACITY)
 
-    val currentAnnotation = generatedQuestionsChannel
-        .receiveAsFlow()
+    val currentAnnotation by mutableIntStateOf(0)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<QuizScreenUiState> = savedStateHandle
@@ -88,11 +88,15 @@ class QuizViewModel @Inject constructor(
         MutableStateFlow(emptyList<Int>())
 
     init {
+        // TODO: глянуть че сохраняется в currentAnnotation в дебаге и проверить onUserInput
         viewModelScope.launch {
             uiState.filterIsInstance<QuizScreenUiState.Loaded>()
                 .collect {
                     launchQuestionProducer()
+                    val initialAnnotation = generatedQuestionsChannel.receive()
+                    val currentAnnotation = initialAnnotation
                 }
+
         }
     }
 
@@ -139,15 +143,20 @@ class QuizViewModel @Inject constructor(
 
     fun onUserInput(s: String) {
         viewModelScope.launch {
-            val annotationInt = currentAnnotation.first()
+            val annotationId = currentAnnotation
+            val correctName = quizRecordsRepository.getStructureNameById(annotationId).first()
             quizRecordsRepository.insertAnswerRecord(
                 StructureAnswerRecord(
-                    structureId = annotationInt,
-                    isCorrect = (annotationInt == s.toInt()),
+                    structureId = annotationId,
+                    isCorrect = s.isCorrectTo(correctName),
                     timeStamp = Clock.System.now()
                 )
             )
         }
+    }
+
+    private fun String.isCorrectTo(other: String): Boolean {
+        return this.lowercase() == other.lowercase()
     }
 
     companion object {

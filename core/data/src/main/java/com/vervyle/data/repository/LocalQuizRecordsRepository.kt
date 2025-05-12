@@ -1,5 +1,6 @@
 package com.vervyle.data.repository
 
+import com.vervyle.database.dao.StructureDao
 import com.vervyle.database.dao.StructureGuessDao
 import com.vervyle.database.model.StructureGuessEntity
 import com.vervyle.model.StructureAnswerRecord
@@ -13,6 +14,7 @@ import javax.inject.Inject
 
 internal class LocalQuizRecordsRepository @Inject constructor(
     private val structureGuessDao: StructureGuessDao,
+    private val structureDao: StructureDao
 ) : QuizRecordsRepository {
 
     override fun getAllAnswerRecords(): Flow<List<StructureAnswerRecord>> = flow {
@@ -49,4 +51,8 @@ internal class LocalQuizRecordsRepository @Inject constructor(
     // TODO: implement
     override fun getStructuresNumber(): Flow<Int> =
         flowOf(89)
+
+    override fun getStructureNameById(id: Int): Flow<String> {
+        return structureDao.getStructureNameById(id)
+    }
 }

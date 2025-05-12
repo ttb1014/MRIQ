@@ -6,8 +6,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -23,6 +22,7 @@ import com.vervyle.design_system.components.ErrorInfoCard
 import com.vervyle.design_system.components.LoadingWheel
 import com.vervyle.quiz.ui.QuizScreen
 import com.vervyle.quiz.ui.QuizScreenUiState
+import kotlinx.coroutines.launch
 
 const val QUIZ_ROUTE_BASE = "quiz_route"
 const val QUIZ_ID_ARG = "quiz_id"
@@ -60,25 +60,27 @@ internal fun QuizRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val shownStructures by viewModel.shownAnnotations.collectAsStateWithLifecycle()
-//    val shownAnnotationIndex by viewModel.currentAnnotation.collectAsStateWithLifecycle(0)
-    val shownAnnotationIndex by remember {
-        mutableIntStateOf(0)
-    }
+    val currentAnnotationIndex = viewModel.currentAnnotation
     val activePlane by viewModel.activePlane.collectAsStateWithLifecycle()
     val planeToIndexMapping by viewModel.planeToIndexMapping.collectAsStateWithLifecycle()
 
     when (uiState) {
-        is QuizScreenUiState.Loaded -> QuizScreen(
-            quizScreenResource = (uiState as QuizScreenUiState.Loaded).quizScreenResource,
-            shownStructures = shownStructures,
-            activePlane = activePlane,
-            planeToIndexMapping = planeToIndexMapping,
-            quizzedStructure = shownAnnotationIndex,
-            onUserInput = viewModel::onUserInput,
-            onPlaneChange = viewModel::onActivePlaneChange,
-            onPlaneIndexChange = viewModel::onPlaneIndexChange,
-            onAnnotationClick = viewModel::onAnnotationClick
-        )
+        is QuizScreenUiState.Loaded -> {
+            val scope = rememberCoroutineScope()
+            QuizScreen(
+                quizScreenResource = (uiState as QuizScreenUiState.Loaded).quizScreenResource,
+                shownStructures = shownStructures,
+                activePlane = activePlane,
+                planeToIndexMapping = planeToIndexMapping,
+                quizzedStructure = currentAnnotationIndex,
+                onUserInput = {
+                    viewModel.onUserInput(it)
+                },
+                onPlaneChange = viewModel::onActivePlaneChange,
+                onPlaneIndexChange = viewModel::onPlaneIndexChange,
+                onAnnotationClick = viewModel::onAnnotationClick
+            )
+        }
 
         QuizScreenUiState.Loading ->
             Box(

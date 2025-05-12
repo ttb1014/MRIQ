@@ -35,7 +35,7 @@ internal class OfflineQuizRepository @Inject constructor(
                             index = medicalImageWithAnnotations.image.imageIndex,
                             annotations = medicalImageWithAnnotations.annotations.map { annotationWithStructure ->
                                 StructureAnnotation(
-                                    structureId = annotationWithStructure.structure.id,
+                                    structureId = annotationWithStructure.structure.externalId,
                                     baseImageIndex = medicalImageWithAnnotations.image.imageIndex,
                                     structureName = annotationWithStructure.structure.name,
                                     mask = run {
