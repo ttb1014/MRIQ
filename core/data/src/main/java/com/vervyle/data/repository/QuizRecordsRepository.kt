@@ -7,4 +7,6 @@ interface QuizRecordsRepository {
     fun getAllAnswerRecords(): Flow<List<StructureAnswerRecord>>
 
     fun insertAnswerRecord(structureAnswerRecord: StructureAnswerRecord)
+
+    fun getStructuresNumber(): Flow<Int>
 }

@@ -1237,6 +1237,14 @@ private fun SunAndMoonPreview() {
                 switchState,
                 Modifier
             )
+            SunAndMoonSwitch(
+                switchState,
+                Modifier
+            )
+            SunAndMoonSwitch(
+                switchState,
+                Modifier
+            )
         }
     }
 }
