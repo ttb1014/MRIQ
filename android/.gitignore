@@ -40,9 +40,5 @@ google-services.json
 # Android Profiling
 *.hprof
 
-*.jpg
-*.png
-*.svg
-mock/src/main/res/drawable/
 /.idea/
 /raw/
