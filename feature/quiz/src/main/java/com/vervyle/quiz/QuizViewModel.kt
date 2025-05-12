@@ -3,6 +3,7 @@ package com.vervyle.quiz
 import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -46,7 +47,7 @@ class QuizViewModel @Inject constructor(
 
     private val generatedQuestionsChannel = Channel<Int>(DEFAULT_CHANNEL_CAPACITY)
 
-    val currentAnnotation by mutableIntStateOf(0)
+    var currentAnnotation by mutableIntStateOf(0)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<QuizScreenUiState> = savedStateHandle
@@ -88,13 +89,12 @@ class QuizViewModel @Inject constructor(
         MutableStateFlow(emptyList<Int>())
 
     init {
-        // TODO: глянуть че сохраняется в currentAnnotation в дебаге и проверить onUserInput
         viewModelScope.launch {
             uiState.filterIsInstance<QuizScreenUiState.Loaded>()
                 .collect {
                     launchQuestionProducer()
                     val initialAnnotation = generatedQuestionsChannel.receive()
-                    val currentAnnotation = initialAnnotation
+                    currentAnnotation = initialAnnotation
                 }
 
         }
@@ -152,6 +152,7 @@ class QuizViewModel @Inject constructor(
                     timeStamp = Clock.System.now()
                 )
             )
+            currentAnnotation = generatedQuestionsChannel.receive()
         }
     }
 

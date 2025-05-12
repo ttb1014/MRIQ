@@ -66,7 +66,6 @@ internal fun QuizRoute(
 
     when (uiState) {
         is QuizScreenUiState.Loaded -> {
-            val scope = rememberCoroutineScope()
             QuizScreen(
                 quizScreenResource = (uiState as QuizScreenUiState.Loaded).quizScreenResource,
                 shownStructures = shownStructures,
