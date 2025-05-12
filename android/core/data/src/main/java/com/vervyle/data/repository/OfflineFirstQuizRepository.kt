@@ -31,18 +31,24 @@ internal class OfflineFirstQuizRepository @Inject constructor(
         try {
             emit(offlineQuizRepository.getQuizByName(quizName).first())
         } catch (exc: Exception) {
+            exc.printStackTrace()
+            Log.d(TAG, exc.message ?: "Error getting dataset from DB!")
             val quizScreenResource = onlineQuizRepository.getQuizByName(quizName).first()
             emit(quizScreenResource)
             val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
             scope.launch {
                 try {
                     aggregatesDao.insertDatasetWithAnnotatedImages(quizScreenResource.asLocalModel())
-                    Log.d("OfflineFirstQuizRepository", "Successfully inserted data into DB")
+                    Log.d(TAG, "Successfully inserted data into DB")
                 } catch (e: Exception) {
-                    Log.d("OfflineFirstQuizRepository", e.message ?: "Error inserting dataset")
+                    Log.d(TAG, e.message ?: "Error inserting dataset")
                 }
             }
         }
+    }
+
+    companion object {
+        private const val TAG = "OfflineFirstQuizRepository"
     }
 }
 
@@ -55,14 +61,14 @@ fun QuizScreenResource.asLocalModel(): DatasetWithAnnotatedImages {
             medicalImages.map { annotatedImage ->
                 MedicalImageWithAnnotations(
                     image = MedicalImageEntity(
-                        imagePath = "${plane.name.uppercase()}_0000_${annotatedImage.index.toFourDigitString()}",
+                        imagePath = "${plane.name.uppercase()}_0000_${annotatedImage.index.toFourDigitString()}.jpg",
                         plane = plane,
                         imageIndex = annotatedImage.index
                     ),
                     annotations = annotatedImage.annotations.map { structureAnnotation ->
                         AnnotationWithStructure(
                             annotation = AnnotationImageEntity(
-                                imagePath = "${plane.name.uppercase()}_${annotatedImage.index.toFourDigitString()}_${structureAnnotation.structureId.toFourDigitString()}"
+                                imagePath = "${plane.name.uppercase()}_${annotatedImage.index.toFourDigitString()}_${structureAnnotation.structureId.toFourDigitString()}.png"
                             ),
                             structure = StructureEntity(
                                 name = structureAnnotation.structureName,

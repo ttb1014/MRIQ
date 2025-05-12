@@ -8,9 +8,11 @@ import com.vervyle.data.repository.QuizRecordsRepository
 import com.vervyle.data.repository.QuizRepository
 import com.vervyle.model.Plane
 import com.vervyle.model.QuizScreenResource
+import com.vervyle.model.StructureAnswerRecord
 import com.vervyle.quiz.ui.QuizScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
@@ -19,6 +21,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -27,6 +30,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import javax.inject.Inject
 
 @HiltViewModel
@@ -39,7 +43,7 @@ class QuizViewModel @Inject constructor(
 
     private lateinit var quizQuestionGenerator: QuizQuestionGenerator
 
-    private val generatedQuestionsChannel = Channel<Int>(10)
+    private val generatedQuestionsChannel = Channel<Int>(DEFAULT_CHANNEL_CAPACITY)
 
     val currentAnnotation = generatedQuestionsChannel
         .receiveAsFlow()
@@ -84,13 +88,19 @@ class QuizViewModel @Inject constructor(
         MutableStateFlow(emptyList<Int>())
 
     init {
-        // TODO: launch only after uiState is loaded
         viewModelScope.launch {
-            while (isActive) {
-                val nextVals = generateNextNQuestions(10)
-                nextVals.forEach {
-                    generatedQuestionsChannel.send(it)
+            uiState.filterIsInstance<QuizScreenUiState.Loaded>()
+                .collect {
+                    launchQuestionProducer()
                 }
+        }
+    }
+
+    private fun CoroutineScope.launchQuestionProducer() = launch {
+        while (isActive) {
+            val nextVals = generateNextNQuestions(DEFAULT_CHANNEL_CAPACITY)
+            nextVals.forEach {
+                generatedQuestionsChannel.send(it)
             }
         }
     }
@@ -98,7 +108,7 @@ class QuizViewModel @Inject constructor(
     private suspend fun generateNextNQuestions(n: Int): IntArray {
         val result = viewModelScope.async {
             val history = quizRecordsRepository.getAllAnswerRecords().first()
-            val availableStructureNumber = 1
+            val availableStructureNumber = quizRecordsRepository.getStructuresNumber().first()
             quizQuestionGenerator = QuizQuestionGenerator()
             quizQuestionGenerator.generateQuestions(history, availableStructureNumber, n)
         }
@@ -128,6 +138,20 @@ class QuizViewModel @Inject constructor(
     }
 
     fun onUserInput(s: String) {
+        viewModelScope.launch {
+            val annotationInt = currentAnnotation.first()
+            quizRecordsRepository.insertAnswerRecord(
+                StructureAnswerRecord(
+                    structureId = annotationInt,
+                    isCorrect = (annotationInt == s.toInt()),
+                    timeStamp = Clock.System.now()
+                )
+            )
+        }
+    }
 
+    companion object {
+        private const val STATE_KEY = "quiz_state"
+        private const val DEFAULT_CHANNEL_CAPACITY = 10
     }
 }

@@ -43,3 +43,6 @@ google-services.json
 *.jpg
 *.png
 *.svg
+mock/src/main/res/drawable/
+/.idea/
+/raw/

@@ -1,6 +1,8 @@
 package com.vervyle.database
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.vervyle.data.repository.QuizRepository
+import com.vervyle.database.dao.AggregatesDao
 import com.vervyle.database.dao.DatasetDao
 import com.vervyle.database.model.DatasetEntity
 import com.vervyle.network.MriqNetworkDataSource
@@ -24,6 +26,8 @@ class DatabaseInstrumentedTest {
     @Inject
     @Named("test")
     internal lateinit var database: MriqDatabase
+
+    @SuppressWarnings
     internal lateinit var dao: DatasetDao
 
     @Inject
@@ -44,10 +48,5 @@ class DatabaseInstrumentedTest {
         val result = dao.getDatasetByName(datasetName)
         assert(result != null)
         assert(result!!.name == datasetName)
-    }
-
-    @Test
-    fun testAggregatesDao() = runBlocking {
-
     }
 }

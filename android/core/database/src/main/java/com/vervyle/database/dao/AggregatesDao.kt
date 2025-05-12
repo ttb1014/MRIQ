@@ -18,7 +18,6 @@ import com.vervyle.database.model.links.ImageAnnotationLink
 
 @Dao
 interface AggregatesDao {
-    // copy-pasted from other DAOs
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertDatasetImageLink(link: DatasetImageLink): Long
 
@@ -84,7 +83,7 @@ interface AggregatesDao {
     }
 
     @Transaction
-    suspend fun insertDatasetWithAnnotatedImages(datasetWithImages: DatasetWithAnnotatedImages) {
+    suspend fun insertDatasetWithAnnotatedImages(datasetWithImages: DatasetWithAnnotatedImages): Long {
         val datasetId = insertDataset(datasetWithImages.dataset)
 
         datasetWithImages.annotatedImages.forEach { imageWithAnnotations ->
@@ -97,5 +96,6 @@ interface AggregatesDao {
                 )
             )
         }
+        return datasetId
     }
 }
