@@ -1,6 +1,7 @@
 package com.vervyle.quiz.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,7 +21,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.vervyle.design_system.components.AnimatedToast
 import com.vervyle.design_system.components.FrameSlider
 import com.vervyle.design_system.components.PlaneChip
 import com.vervyle.design_system.components.UserInput
@@ -36,6 +40,11 @@ fun QuizScreen(
     quizzedStructure: Int,
     activePlane: Plane,
     planeToIndexMapping: Map<Plane, Int>,
+
+    answerToastOpacity: Float,
+    answerToastIcon: ImageVector?,
+    answerToastIconColor: Color,
+
     onUserInput: (String) -> Unit,
     onPlaneChange: (Plane) -> Unit,
     onPlaneIndexChange: (Plane, Int) -> Unit,
@@ -104,68 +113,81 @@ fun QuizScreen(
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(16.dp))
-        Column(
-            verticalArrangement = Arrangement.Bottom,
-            modifier = Modifier.fillMaxSize()
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.TopCenter
         ) {
-            BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-                val width = (maxWidth - 16.dp) / 3
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Plane.entries.forEach { plane ->
-                        AnnotatedImagePlaneView(
-                            plane = plane,
-                            bitmap = when (plane) {
-                                Plane.AXIAL -> quizScreenResource.annotatedImages[plane]!![currentAxialFrame].image
+            Column(
+                verticalArrangement = Arrangement.Bottom,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                    val width = (maxWidth - 16.dp) / 3
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        Plane.entries.forEach { plane ->
+                            AnnotatedImagePlaneView(
+                                plane = plane,
+                                bitmap = when (plane) {
+                                    Plane.AXIAL -> quizScreenResource.annotatedImages[plane]!![currentAxialFrame].image
 
-                                Plane.CORONAL -> quizScreenResource.annotatedImages[plane]!![currentCoronalFrame].image
+                                    Plane.CORONAL -> quizScreenResource.annotatedImages[plane]!![currentCoronalFrame].image
 
-                                Plane.SAGITTAL -> quizScreenResource.annotatedImages[plane]!![currentSagittalFrame].image
-                            },
-                            currentAxialIndex = currentAxialFrame,
-                            currentCoronalIndex = currentCoronalFrame,
-                            currentSagittalIndex = currentSagittalFrame,
-                            axialSize = axialSize,
-                            coronalSize = coronalSize,
-                            sagittalSize = sagittalSize,
-                            Modifier
-                                .size(width)
-                                .clip(RoundedCornerShape(16.dp))
-                        )
+                                    Plane.SAGITTAL -> quizScreenResource.annotatedImages[plane]!![currentSagittalFrame].image
+                                },
+                                currentAxialIndex = currentAxialFrame,
+                                currentCoronalIndex = currentCoronalFrame,
+                                currentSagittalIndex = currentSagittalFrame,
+                                axialSize = axialSize,
+                                coronalSize = coronalSize,
+                                sagittalSize = sagittalSize,
+                                Modifier
+                                    .size(width)
+                                    .clip(RoundedCornerShape(16.dp))
+                            )
+                        }
                     }
                 }
-            }
-            Spacer(Modifier.height(16.dp))
-            Row(
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-            ) {
-                Plane.entries.forEach { plane ->
-                    PlaneChip(
-                        plane,
-                        onPlaneChange
+                Spacer(Modifier.height(16.dp))
+                Row(
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                ) {
+                    Plane.entries.forEach { plane ->
+                        PlaneChip(
+                            plane,
+                            onPlaneChange
+                        )
+                        Spacer(Modifier.width(8.dp))
+                    }
+                    FrameSlider(
+                        value = when (activePlane) {
+                            Plane.AXIAL -> currentAxialFrame
+                            Plane.CORONAL -> currentCoronalFrame
+                            Plane.SAGITTAL -> currentSagittalFrame
+                        },
+                        maxValue = when (activePlane) {
+                            Plane.AXIAL -> axialSize
+                            Plane.CORONAL -> coronalSize
+                            Plane.SAGITTAL -> sagittalSize
+                        },
+                        onValueChange = {
+                            onPlaneIndexChange(activePlane, it)
+                        },
+                        modifier = Modifier,
                     )
-                    Spacer(Modifier.width(8.dp))
                 }
-                FrameSlider(
-                    value = when (activePlane) {
-                        Plane.AXIAL -> currentAxialFrame
-                        Plane.CORONAL -> currentCoronalFrame
-                        Plane.SAGITTAL -> currentSagittalFrame
-                    },
-                    maxValue = when (activePlane) {
-                        Plane.AXIAL -> axialSize
-                        Plane.CORONAL -> coronalSize
-                        Plane.SAGITTAL -> sagittalSize
-                    },
-                    onValueChange = {
-                        onPlaneIndexChange(activePlane, it)
-                    },
-                    modifier = Modifier,
+            }
+            answerToastIcon?.let {
+                AnimatedToast(
+                    opacity = answerToastOpacity,
+                    iconColor = answerToastIconColor,
+                    icon = it,
+                    modifier = Modifier
                 )
             }
         }

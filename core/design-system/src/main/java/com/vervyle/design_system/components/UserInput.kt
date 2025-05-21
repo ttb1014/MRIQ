@@ -41,6 +41,7 @@ fun UserInput(
             disabledIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
         ),
+        maxLines = 2,
         trailingIcon = @Composable {
             Image(
                 painter = painterResource(R.drawable.search),

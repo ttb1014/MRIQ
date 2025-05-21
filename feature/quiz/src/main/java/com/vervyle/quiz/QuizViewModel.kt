@@ -12,6 +12,7 @@ import com.vervyle.data.repository.QuizRepository
 import com.vervyle.model.Plane
 import com.vervyle.model.QuizScreenResource
 import com.vervyle.model.StructureAnswerRecord
+import com.vervyle.quiz.ui.AnswerEvent
 import com.vervyle.quiz.ui.QuizScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -19,9 +20,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filterIsInstance
@@ -77,6 +80,10 @@ class QuizViewModel @Inject constructor(
             SharingStarted.WhileSubscribed(5000L),
             QuizScreenUiState.Loading
         )
+
+    private val _answerEvent: MutableSharedFlow<AnswerEvent> =
+        MutableSharedFlow()
+    val answerEvent = _answerEvent.asSharedFlow()
 
     private val _activePlane = MutableStateFlow<Plane>(Plane.AXIAL)
     val activePlane = _activePlane.asStateFlow()
@@ -145,10 +152,19 @@ class QuizViewModel @Inject constructor(
         viewModelScope.launch {
             val annotationId = currentAnnotation
             val correctName = quizRecordsRepository.getStructureNameById(annotationId).first()
+            val isCorrect = s.isCorrectTo(correctName)
+
+            _answerEvent.emit(
+                when (isCorrect) {
+                    true -> AnswerEvent.Correct
+                    false -> AnswerEvent.Wrong
+                }
+            )
+
             quizRecordsRepository.insertAnswerRecord(
                 StructureAnswerRecord(
                     structureId = annotationId,
-                    isCorrect = s.isCorrectTo(correctName),
+                    isCorrect = isCorrect,
                     timeStamp = Clock.System.now()
                 )
             )

@@ -5,6 +5,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Bookmark
 import androidx.compose.material.icons.rounded.BookmarkBorder
 import androidx.compose.material.icons.rounded.Build
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Error
 import androidx.compose.material.icons.rounded.FormatListNumbered
 import androidx.compose.material.icons.rounded.MoreVert
@@ -22,4 +23,5 @@ object Icons {
     val Search = Icons.Rounded.Search
     val BackArrow = Icons.AutoMirrored.Rounded.ArrowBack
     val Error = Icons.Rounded.Error
+    val Correct = Icons.Rounded.Check
 }

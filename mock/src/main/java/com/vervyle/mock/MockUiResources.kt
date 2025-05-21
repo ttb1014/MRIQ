@@ -4,6 +4,9 @@ import com.vervyle.model.old.MriData
 import com.vervyle.model.old.Topic
 import com.vervyle.model.old.UserQuizResource
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 
 val userQuizResources = listOf(
     UserQuizResource(
@@ -11,7 +14,13 @@ val userQuizResources = listOf(
         title = "brain_anatomy",
         mriData = MriData(emptyList(), emptyList(), emptyList()),
         pathToHeaderImage = "",
-        date = Instant.DISTANT_FUTURE,
+        date = createInstant(
+            year = 2025,
+            month = 5,
+            day = 11,
+            hour = 12,
+            minute = 32,
+        ),
         topics = emptyList<Topic>(),
         isBookmarked = false,
         isViewed = false,
@@ -27,6 +36,19 @@ val userQuizResources = listOf(
 //        isViewed = false,
 //    ),
 )
+
+fun createInstant(
+    year: Int,
+    month: Int,
+    day: Int,
+    hour: Int,
+    minute: Int,
+    timeZoneId: String = "Europe/Moscow"
+): Instant {
+    val localDateTime = LocalDateTime(year, month, day, hour, minute)
+    val timeZone = TimeZone.of(timeZoneId)
+    return localDateTime.toInstant(timeZone)
+}
 
 val idToNameMapping = mapOf(
     1 to "SULCI",
