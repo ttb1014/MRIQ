@@ -63,7 +63,6 @@ class AppState(
         when (topLevelDestination) {
             TopLevelDestination.CATALOG -> navHostController.navigateToQuizFeed(topLevelNavOptions)
             TopLevelDestination.QUIZ -> navHostController.navigateToQuiz()
-            else -> TODO()
         }
     }
 

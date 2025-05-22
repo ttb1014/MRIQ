@@ -46,7 +46,6 @@ fun App(
                     onNavigateToDestination = appState::navigateToTopLevelDestination
                 )
             } else {
-//                Spacer(Modifier.height(32.dp))
             }
         }
     ) { paddingValues ->
@@ -55,11 +54,6 @@ fun App(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .consumeWindowInsets(paddingValues)
-//                .windowInsetsPadding(
-//                    WindowInsets.safeDrawing.only(
-//                        WindowInsetsSides.Horizontal
-//                    ),
-//                ),
         ) {
             Column(Modifier.fillMaxSize()) {
                 val destination = appState.currentTopLevelDestination

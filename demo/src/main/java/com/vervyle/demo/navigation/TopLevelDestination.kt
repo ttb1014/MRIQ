@@ -22,10 +22,4 @@ enum class TopLevelDestination(
         enabled = true,
         iconTextId = R.string.quiz
     ),
-//    PROFILE(
-//        selectedIcon = Icons.Profile,
-//        unselectedIcon = Icons.Profile,
-//        enabled = false,
-//        iconTextId = R.string.profile
-//    )
 }
