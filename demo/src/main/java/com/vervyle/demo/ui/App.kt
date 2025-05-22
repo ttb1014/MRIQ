@@ -45,7 +45,6 @@ fun App(
                     modifier = Modifier,
                     onNavigateToDestination = appState::navigateToTopLevelDestination
                 )
-            } else {
             }
         }
     ) { paddingValues ->

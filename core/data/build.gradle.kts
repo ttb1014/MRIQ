@@ -52,8 +52,8 @@ dependencies {
     implementation(libs.kotlinx.datetime)
 
     // Hilt Testing
-    androidTestImplementation("com.google.dagger:hilt-android-testing:2.48")
-    kaptAndroidTest("com.google.dagger:hilt-compiler:2.48")
+    androidTestImplementation(libs.hilt.android.testing)
+    kaptAndroidTest(libs.hilt.compiler)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -61,7 +61,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-    androidTestImplementation("com.squareup.okhttp3:okhttp:4.12.0")
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.kotlinx.serialization.json)
+    androidTestImplementation(libs.okhttp)
 }
