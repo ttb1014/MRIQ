@@ -29,18 +29,20 @@ class ZipToQuizDtoConverter(
 
     /**
      * @param responseBody zip-архив отправленный сервером.
+     * @throws SecurityException
+     * @throws NotParsedException
      */
     override fun convert(responseBody: ResponseBody): QuizDto {
         outputDir.deleteRecursively()
         outputDir.mkdirs()
 
-        val zipFiles = responseBody.getFiles()
+        val zipFiles = responseBody.getAndSaveFiles()
 
         val quizDto = zipFiles.toQuizDto()
         return quizDto
     }
 
-    private fun ResponseBody.getFiles(): List<File> {
+    private fun ResponseBody.getAndSaveFiles(): List<File> {
         val zipFiles = mutableListOf<File>()
         val buffer = ByteArray(1024)
 
@@ -77,6 +79,11 @@ class ZipToQuizDtoConverter(
         }
     }
 
+    /**
+     * TODO: сделать обработку асинхронной
+     * @throws IllegalArgumentException
+     * @throws NullPointerException
+     */
     private fun File.parseAsJson(): QuizDto {
         val text = readText()
         val quiz = Json.parseToJsonElement(text).jsonObject
@@ -138,7 +145,6 @@ class ZipToQuizDtoConverter(
 
     class Factory(private val outputDir: File) : Converter.Factory() {
         @OptIn(ExperimentalStdlibApi::class)
-        @Suppress("Warnings")
         /**
          * Используется для автоматического преобразования из responseBody в QuizDto.
          * Предоставляет данный класс конвертера, если желаемый тип совпадает.
