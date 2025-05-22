@@ -5,7 +5,6 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.vervyle.demo.ui.AppState
-import com.vervyle.quiz.QUIZ_ROUTE
 import com.vervyle.quiz.quizScreen
 import com.vervyle.quiz_feed.CATALOG_ROUTE
 import com.vervyle.quiz_feed.quizFeedScreen

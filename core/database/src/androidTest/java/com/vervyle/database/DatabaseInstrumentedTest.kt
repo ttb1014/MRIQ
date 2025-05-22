@@ -1,8 +1,6 @@
 package com.vervyle.database
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.vervyle.data.repository.QuizRepository
-import com.vervyle.database.dao.AggregatesDao
 import com.vervyle.database.dao.DatasetDao
 import com.vervyle.database.model.DatasetEntity
 import com.vervyle.network.MriqNetworkDataSource
