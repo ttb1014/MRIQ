@@ -66,3 +66,4 @@
 git clone https://github.com/yourusername/mriq.git
 cd mriq
 ./gradlew installDebug
+```
