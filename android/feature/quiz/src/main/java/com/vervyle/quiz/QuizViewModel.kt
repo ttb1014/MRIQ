@@ -1,6 +1,9 @@
 package com.vervyle.quiz
 
 import android.content.Context
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,6 +12,7 @@ import com.vervyle.data.repository.QuizRepository
 import com.vervyle.model.Plane
 import com.vervyle.model.QuizScreenResource
 import com.vervyle.model.StructureAnswerRecord
+import com.vervyle.quiz.ui.AnswerEvent
 import com.vervyle.quiz.ui.QuizScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -16,9 +20,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filterIsInstance
@@ -26,7 +32,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -45,8 +50,7 @@ class QuizViewModel @Inject constructor(
 
     private val generatedQuestionsChannel = Channel<Int>(DEFAULT_CHANNEL_CAPACITY)
 
-    val currentAnnotation = generatedQuestionsChannel
-        .receiveAsFlow()
+    var currentAnnotation by mutableIntStateOf(0)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<QuizScreenUiState> = savedStateHandle
@@ -77,6 +81,10 @@ class QuizViewModel @Inject constructor(
             QuizScreenUiState.Loading
         )
 
+    private val _answerEvent: MutableSharedFlow<AnswerEvent> =
+        MutableSharedFlow()
+    val answerEvent = _answerEvent.asSharedFlow()
+
     private val _activePlane = MutableStateFlow<Plane>(Plane.AXIAL)
     val activePlane = _activePlane.asStateFlow()
 
@@ -92,7 +100,10 @@ class QuizViewModel @Inject constructor(
             uiState.filterIsInstance<QuizScreenUiState.Loaded>()
                 .collect {
                     launchQuestionProducer()
+                    val initialAnnotation = generatedQuestionsChannel.receive()
+                    currentAnnotation = initialAnnotation
                 }
+
         }
     }
 
@@ -139,15 +150,30 @@ class QuizViewModel @Inject constructor(
 
     fun onUserInput(s: String) {
         viewModelScope.launch {
-            val annotationInt = currentAnnotation.first()
+            val annotationId = currentAnnotation
+            val correctName = quizRecordsRepository.getStructureNameById(annotationId).first()
+            val isCorrect = s.isCorrectTo(correctName)
+
+            _answerEvent.emit(
+                when (isCorrect) {
+                    true -> AnswerEvent.Correct
+                    false -> AnswerEvent.Wrong
+                }
+            )
+
             quizRecordsRepository.insertAnswerRecord(
                 StructureAnswerRecord(
-                    structureId = annotationInt,
-                    isCorrect = (annotationInt == s.toInt()),
+                    structureId = annotationId,
+                    isCorrect = isCorrect,
                     timeStamp = Clock.System.now()
                 )
             )
+            currentAnnotation = generatedQuestionsChannel.receive()
         }
+    }
+
+    private fun String.isCorrectTo(other: String): Boolean {
+        return this.lowercase() == other.lowercase()
     }
 
     companion object {

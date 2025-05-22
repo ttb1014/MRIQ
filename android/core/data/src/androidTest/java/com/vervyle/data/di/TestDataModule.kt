@@ -8,15 +8,10 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dagger.hilt.testing.TestInstallIn
 import javax.inject.Named
 
 @Module
 @InstallIn(SingletonComponent::class)
-//@TestInstallIn(
-//    components = [SingletonComponent::class],
-//    replaces = [DataModule::class]
-//)
 abstract class DataModule {
 
     @Binds

@@ -1,15 +1,20 @@
 package com.vervyle.quiz
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -20,7 +25,9 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.vervyle.design_system.components.ErrorInfoCard
+import com.vervyle.design_system.components.Icons
 import com.vervyle.design_system.components.LoadingWheel
+import com.vervyle.quiz.ui.AnswerEvent
 import com.vervyle.quiz.ui.QuizScreen
 import com.vervyle.quiz.ui.QuizScreenUiState
 
@@ -60,25 +67,63 @@ internal fun QuizRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val shownStructures by viewModel.shownAnnotations.collectAsStateWithLifecycle()
-//    val shownAnnotationIndex by viewModel.currentAnnotation.collectAsStateWithLifecycle(0)
-    val shownAnnotationIndex by remember {
-        mutableIntStateOf(0)
-    }
+    val currentAnnotationIndex = viewModel.currentAnnotation
     val activePlane by viewModel.activePlane.collectAsStateWithLifecycle()
     val planeToIndexMapping by viewModel.planeToIndexMapping.collectAsStateWithLifecycle()
 
-    when (uiState) {
-        is QuizScreenUiState.Loaded -> QuizScreen(
-            quizScreenResource = (uiState as QuizScreenUiState.Loaded).quizScreenResource,
-            shownStructures = shownStructures,
-            activePlane = activePlane,
-            planeToIndexMapping = planeToIndexMapping,
-            quizzedStructure = shownAnnotationIndex,
-            onUserInput = viewModel::onUserInput,
-            onPlaneChange = viewModel::onActivePlaneChange,
-            onPlaneIndexChange = viewModel::onPlaneIndexChange,
-            onAnnotationClick = viewModel::onAnnotationClick
+    val answerToastOpacity by remember {
+        mutableStateOf(
+            Animatable(1f)
         )
+    }
+    var answerToastIcon: ImageVector? by remember {
+        mutableStateOf(null)
+    }
+    var answerToastIconColor by remember {
+        mutableStateOf(Color.Green)
+    }
+    LaunchedEffect(Unit) {
+        viewModel.answerEvent.collect { event ->
+            when (event) {
+                AnswerEvent.Correct -> {
+                    answerToastIcon = Icons.Correct
+                    answerToastIconColor = Color.Green
+                }
+
+                AnswerEvent.Wrong -> {
+                    answerToastIcon = Icons.Error
+                    answerToastIconColor = Color.Red
+                }
+            }
+
+            answerToastOpacity.snapTo(1f)
+            answerToastOpacity.animateTo(
+                targetValue = 0f,
+                animationSpec = tween(2000),
+            )
+        }
+    }
+
+    when (uiState) {
+        is QuizScreenUiState.Loaded -> {
+            QuizScreen(
+                quizScreenResource = (uiState as QuizScreenUiState.Loaded).quizScreenResource,
+                shownStructures = shownStructures,
+                activePlane = activePlane,
+                planeToIndexMapping = planeToIndexMapping,
+                quizzedStructure = currentAnnotationIndex,
+                onUserInput = {
+                    viewModel.onUserInput(it)
+                },
+                onPlaneChange = viewModel::onActivePlaneChange,
+                onPlaneIndexChange = viewModel::onPlaneIndexChange,
+                onAnnotationClick = viewModel::onAnnotationClick,
+                answerToastOpacity = answerToastOpacity.value,
+                answerToastIcon = answerToastIcon,
+                answerToastIconColor = answerToastIconColor,
+                modifier = Modifier,
+            )
+        }
 
         QuizScreenUiState.Loading ->
             Box(

@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Upsert
 import com.vervyle.database.model.StructureEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface StructureDao {
@@ -28,4 +29,7 @@ interface StructureDao {
 
     @Query("SELECT * FROM structures")
     suspend fun getAllStructures(): List<StructureEntity>
+
+    @Query("SELECT name FROM structures WHERE external_id = :id LIMIT 1")
+    fun getStructureNameById(id: Int): Flow<String>
 }

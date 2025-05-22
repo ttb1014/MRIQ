@@ -36,11 +36,12 @@ fun AnnotatedImagePlaneView(
     ) {
         Text(
             text = plane.name.lowercase() + " ${
-                when (plane) {
-                    Plane.AXIAL -> currentAxialIndex
-                    Plane.CORONAL -> currentCoronalIndex
-                    Plane.SAGITTAL -> currentSagittalIndex
-                }
+//                1 +
+                        when (plane) {
+                            Plane.AXIAL -> currentAxialIndex
+                            Plane.CORONAL -> currentCoronalIndex
+                            Plane.SAGITTAL -> currentSagittalIndex
+                        }
             }"
         )
 

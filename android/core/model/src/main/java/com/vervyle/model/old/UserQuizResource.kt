@@ -5,12 +5,16 @@ import kotlinx.datetime.Instant
 data class UserQuizResource constructor(
     val id: Int,
     val title: String,
+    val cleanTitle: String = title.split('_')
+        .joinToString(" ") { word ->
+            word.lowercase().replaceFirstChar { it.uppercaseChar() }
+        },
     val mriData: MriData,
     val pathToHeaderImage: String,
     val date: Instant,
     val topics: List<Topic>,
     val isBookmarked: Boolean,
-    val isViewed: Boolean
+    val isViewed: Boolean,
 ) {
     constructor(quizResource: QuizResource, userData: UserData) : this(
         id = quizResource.id,

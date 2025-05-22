@@ -17,8 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.vervyle.design_system.theme.LocalTimeZone
-import com.vervyle.model.old.MriData
-import com.vervyle.model.old.Topic
+import com.vervyle.mock.userQuizResources
 import com.vervyle.model.old.UserQuizResource
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
@@ -51,7 +50,7 @@ fun QuizResourceCard(
                     Spacer(modifier = Modifier.height(12.dp))
                     Row {
                         Text(
-                            userQuizResource.title,
+                            userQuizResource.cleanTitle,
                             style = MaterialTheme.typography.headlineSmall,
                             modifier = modifier
                         )
@@ -71,16 +70,7 @@ fun QuizResourceCard(
 @Composable
 private fun QuizResourceCardPreview() {
     QuizResourceCard(
-        userQuizResource = UserQuizResource(
-            id = 0,
-            title = "title",
-            mriData = MriData(emptyList(), emptyList(), emptyList()),
-            pathToHeaderImage = "",
-            date = Instant.DISTANT_FUTURE,
-            topics = emptyList<Topic>(),
-            isBookmarked = false,
-            isViewed = false,
-        ),
+        userQuizResource = userQuizResources[0],
         onClick = {}
     )
 }
@@ -107,6 +97,6 @@ fun QuizResourceMetadata(
 @Composable
 fun dateFormatted(publishDate: Instant): String = DateTimeFormatter
     .ofLocalizedDate(FormatStyle.MEDIUM)
-    .withLocale(Locale.getDefault())
+    .withLocale(Locale.forLanguageTag("ru-RU"))
     .withZone(LocalTimeZone.current.toJavaZoneId())
     .format(publishDate.toJavaInstant())
