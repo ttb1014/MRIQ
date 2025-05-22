@@ -65,5 +65,6 @@
 ```bash
 git clone https://github.com/yourusername/mriq.git
 cd mriq
-./gradlew installDebug
+# TODO: Добавить скрипт запуска
+#./gradlew installDebug
 ```
