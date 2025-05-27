@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">demo</string>
+    <string name="app_name">MRIQ</string>
     <string name="catalog">Catalog</string>
     <string name="quiz">Quiz</string>
     <string name="profile">Profile</string>

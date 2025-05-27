@@ -3,11 +3,12 @@ package com.vervyle.quiz
 import com.vervyle.model.StructureAnswerRecord
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import javax.inject.Inject
 import kotlin.math.pow
 import kotlin.random.Random
 import kotlin.time.DurationUnit
 
-class QuizQuestionGenerator {
+class QuizQuestionGenerator @Inject constructor() {
     private val current = Clock.System.now()
     private val random = Random(RANDOM_SEED)
 

@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     kotlin("kapt")
+//    id("dagger.hilt.android.plugin")
 }
 
 android {
@@ -10,7 +11,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        minSdk = 24
+        minSdk = 26
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -57,6 +58,10 @@ dependencies {
     kapt(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.navigation.compose)
+
+//    androidTestImplementation(libs.hilt.android.testing)
+//    androidTestImplementation(libs.hilt.android.compiler)
+//    kaptAndroidTest(libs.hilt.android.compiler)
 
     //Default
     implementation(libs.androidx.core.ktx)
