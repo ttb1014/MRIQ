@@ -17,21 +17,10 @@ class QuizQuestionGenerator @Inject constructor() {
         availableStructureNumber: Int,
         z: Int,
     ): IntArray {
-        val stat = generateStructureStatistics(
+        val c = generateCumulativeProbability(
             structureAnswerHistory,
-            availableStructureNumber
+            availableStructureNumber,
         )
-        val score = stat
-            .map { value ->
-                1.0 - value
-            }
-            .normalize()
-
-        val p = score.softmax()
-
-        val c = p.runningFold(0.0) { acc, value ->
-            acc + value
-        }.drop(1)
 
         val result = IntArray(z)
         repeat(z) { index ->
@@ -48,6 +37,29 @@ class QuizQuestionGenerator @Inject constructor() {
             result[index] = questionIndex
         }
         return result
+    }
+
+    fun generateCumulativeProbability(
+        structureAnswerHistory: List<StructureAnswerRecord>,
+        availableStructureNumber: Int,
+    ): List<Double> {
+        val stat = generateStructureStatistics(
+            structureAnswerHistory,
+            availableStructureNumber
+        )
+        val score = stat
+            .map { value ->
+                1.0 - value
+            }
+            .normalize()
+
+        val p = score.softmax()
+
+        val c = p.runningFold(0.0) { acc, value ->
+            acc + value
+        }.drop(1)
+
+        return c
     }
 
     private fun List<Double>.softmax(): List<Double> {
@@ -86,7 +98,7 @@ class QuizQuestionGenerator @Inject constructor() {
                 if (all == 0.0) {
                     return@map 0.0
                 }
-                correct / all
+                correct+THRESHOLD / all
             }
     }
 
@@ -98,9 +110,10 @@ class QuizQuestionGenerator @Inject constructor() {
 
 
     companion object {
-        private const val T = 1000L
-        private const val LAMBDA = 1E-6
+        private const val T = 1
+        private const val LAMBDA = 1E-3
         private const val ACCOUNT_RECORD_NUMBER = 100
         private const val RANDOM_SEED = 12312312312L
+        private const val THRESHOLD = 1E-6
     }
 }

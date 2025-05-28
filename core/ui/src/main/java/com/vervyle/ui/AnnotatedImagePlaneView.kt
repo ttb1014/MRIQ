@@ -36,7 +36,7 @@ fun AnnotatedImagePlaneView(
     ) {
         Text(
             text = plane.name.lowercase() + " ${
-//                1 +
+                1 +
                         when (plane) {
                             Plane.AXIAL -> currentAxialIndex
                             Plane.CORONAL -> currentCoronalIndex
@@ -46,24 +46,20 @@ fun AnnotatedImagePlaneView(
         )
 
         val xStep = when (plane) {
-            Plane.AXIAL -> currentCoronalIndex
-            Plane.CORONAL -> currentSagittalIndex
-            Plane.SAGITTAL -> currentAxialIndex
-        }
-        val xMax = when (plane) {
-            Plane.AXIAL -> coronalSize
-            Plane.CORONAL -> sagittalSize
-            Plane.SAGITTAL -> axialSize
-        }
-        val yStep = when (plane) {
-            Plane.AXIAL -> currentSagittalIndex
-            Plane.CORONAL -> currentAxialIndex
+            Plane.AXIAL, Plane.CORONAL -> sagittalSize - currentSagittalIndex
             Plane.SAGITTAL -> currentCoronalIndex
         }
-        val yMax = when (plane) {
-            Plane.AXIAL -> sagittalSize
-            Plane.CORONAL -> axialSize
+        val xMax = when (plane) {
+            Plane.AXIAL, Plane.CORONAL -> sagittalSize
             Plane.SAGITTAL -> coronalSize
+        }
+        val yStep = when (plane) {
+            Plane.CORONAL, Plane.SAGITTAL -> currentAxialIndex
+            Plane.AXIAL -> currentCoronalIndex
+        }
+        val yMax = when (plane) {
+            Plane.CORONAL, Plane.SAGITTAL -> axialSize
+            Plane.AXIAL -> coronalSize
         }
 
         Image(

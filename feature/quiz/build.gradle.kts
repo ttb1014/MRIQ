@@ -59,9 +59,9 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.navigation.compose)
 
-//    androidTestImplementation(libs.hilt.android.testing)
-//    androidTestImplementation(libs.hilt.android.compiler)
-//    kaptAndroidTest(libs.hilt.android.compiler)
+    androidTestImplementation(libs.hilt.android.testing)
+    kaptAndroidTest(libs.hilt.android.compiler)
+    androidTestImplementation("org.robolectric:robolectric:4.12.1")
 
     //Default
     implementation(libs.androidx.core.ktx)
