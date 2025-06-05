@@ -4,6 +4,7 @@ import com.vervyle.model.StructureAnswerRecord
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
+import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.random.Random
 import kotlin.time.DurationUnit
@@ -53,7 +54,8 @@ class QuizQuestionGenerator @Inject constructor() {
             }
             .normalize()
 
-        val p = score.softmax()
+        // почему софтмакс всё "выравнивает"?
+        val p = score.normalize()
 
         val c = p.runningFold(0.0) { acc, value ->
             acc + value
@@ -85,7 +87,7 @@ class QuizQuestionGenerator @Inject constructor() {
         val allStatistics = Array(availableStructureNumber) { 0.0 }
 
         structureAnswerHistory
-            .takeLast(ACCOUNT_RECORD_NUMBER)
+            .takeLast(ACCOUNT_RECORD_LIMIT)
             .forEach { record ->
                 assert(record.structureId < availableStructureNumber)
                 allStatistics[record.structureId] += getWeight(record.timeStamp)
@@ -93,27 +95,35 @@ class QuizQuestionGenerator @Inject constructor() {
                     correctStatistics[record.structureId] += getWeight(record.timeStamp)
             }
 
+        val threshold = allStatistics
+            .zip(correctStatistics)
+            .filter { it.second == 0.0 }
+            .minOfOrNull { it.first }?.div(10) ?: THRESHOLD
+
         return correctStatistics.zip(allStatistics)
             .map { (correct, all) ->
                 if (all == 0.0) {
                     return@map 0.0
                 }
-                correct+THRESHOLD / all
+                if (correct == 0.0) {
+                    return@map (correct + threshold) / all
+                }
+                correct / all
             }
     }
 
     private fun getWeight(instant: Instant): Double {
         val power = -1 * LAMBDA * (current - instant).toDouble(DurationUnit.SECONDS)
         val w = Math.E.pow(power)
-        return w
+        return w.absoluteValue
     }
 
 
     companion object {
         private const val T = 1
-        private const val LAMBDA = 1E-3
-        private const val ACCOUNT_RECORD_NUMBER = 100
+        private const val LAMBDA = 1E-4
+        private const val ACCOUNT_RECORD_LIMIT = 1000
         private const val RANDOM_SEED = 12312312312L
-        private const val THRESHOLD = 1E-6
+        private const val THRESHOLD = 1e-15
     }
 }
