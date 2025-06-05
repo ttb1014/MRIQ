@@ -10,6 +10,10 @@ import com.vervyle.network.MriqNetworkDataSource
 import com.vervyle.network.model.AnnotatedImageDto
 import com.vervyle.network.model.QuizDto
 import com.vervyle.network.model.StructureDto
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
@@ -43,21 +47,31 @@ class OnlineQuizRepository @Inject constructor(
         )
     }
 
-    suspend fun AnnotatedImageDto.asExternalModel(structures: List<StructureDto>): AnnotatedImage {
-        val image = AnnotatedImage(
-            image = diskManager.loadImage(this.pathToImageFile)!!,
-            index = this.index,
-            annotations = this.annotations.map { annotationDto ->
-                StructureAnnotation(
-                    structureId = annotationDto.structureId,
-                    baseImageIndex = this.index,
-                    structureName = structures.first { it.id == annotationDto.structureId }.name,
-                    mask = diskManager.loadImage(annotationDto.pathToImageFile)!!,
-                    structureDescription = structures.first { it.id == annotationDto.structureId }.description
-                )
+    suspend fun AnnotatedImageDto.asExternalModel(structures: List<StructureDto>): AnnotatedImage =
+        coroutineScope {
+            val imageDeferred = async(Dispatchers.IO) {
+                diskManager.loadImage(this@asExternalModel.pathToImageFile)!!
             }
-        )
 
-        return image
-    }
+            val annotationsDeferred = annotations.map { annotationDto ->
+                async(Dispatchers.IO) {
+                    val structure = structures.first { it.id == annotationDto.structureId }
+                    StructureAnnotation(
+                        structureId = annotationDto.structureId,
+                        baseImageIndex = index,
+                        structureName = structure.name,
+                        mask = diskManager.loadImage(annotationDto.pathToImageFile)!!,
+                        structureDescription = structure.description
+                    )
+                }
+            }
+
+            val annotatedImage = AnnotatedImage(
+                image = imageDeferred.await(),
+                index = this@asExternalModel.index,
+                annotations = annotationsDeferred.awaitAll()
+            )
+
+            return@coroutineScope annotatedImage
+        }
 }

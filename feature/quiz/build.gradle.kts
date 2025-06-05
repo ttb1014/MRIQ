@@ -61,6 +61,7 @@ dependencies {
 
     androidTestImplementation(libs.hilt.android.testing)
     kaptAndroidTest(libs.hilt.android.compiler)
+    testImplementation("org.jfree:jfreechart:1.5.3")
     androidTestImplementation("org.robolectric:robolectric:4.12.1")
 
     //Default
