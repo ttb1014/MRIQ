@@ -237,8 +237,6 @@ internal data class SunAndMoonVisuals(
         val DEFAULT_RAY_COLOR = Color(0x1AFFFFFF)
         val DEFAULT_FRONT_CLOUD_COLOR = Color(0xFFEFFEFF)
         val DEFAULT_BACK_CLOUD_COLOR = Color(0x99EFFEFF)
-
-        //TODO: alpha should be 25% as in design
         val DEFAULT_BLACK_SHADOW_COLOR = Color(0x73000000)
         val DEFAULT_WHITE_SHADOW_COLOR = Color(0xF0FFFFFF)
 

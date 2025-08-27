@@ -78,8 +78,6 @@ val BodySmallStyle = TextStyle(
     lineHeight = 16.sp,
     letterSpacing = 0.4.sp
 )
-
-// TODO: change to use custom textStyles
 internal val Typography = Typography(
     displayLarge = TextStyle(
         fontWeight = FontWeight.Normal,

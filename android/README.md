@@ -62,8 +62,5 @@
 
 ## 🚀 Запуск проекта
 
-```bash
-git clone https://github.com/yourusername/mriq.git
-cd mriq
-./gradlew installDebug
-```
+1. Добавить в local.properties строчку apiurl=http://<ip>:<port>/
+2. Собрать проект
